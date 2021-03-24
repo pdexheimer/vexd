@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% from "utils.html" import geo_accession_link, pubmed_link %}
+{% block title %}GEO Results{% endblock %}
+{% block body %}
+<h2>Found {{ gse_list|length }} {{ "study"|pluralize(gse_list|length, "studies") }}</h2>
+<table class="gse_list">
+    {% for gse in gse_list %}
+    {% set commify=joiner(", ") %}
+    <tr>
+        <td>
+            <span class="geo_id"><a href="{{ url_for('ui.display_geo_entry', gse_id=gse.id) }}">{{ gse.id }}</a></span><br>
+            <small>{{ gse.submission.date_str }}</small>
+        </td>
+        <td><span class="title">{{ gse.title|default("Unknown title") }}</span>
+            {%- for pmid in gse.pubmed %}&nbsp;{{ pubmed_link(pmid, "&#x1F4D6;") }}{% endfor %}<br>
+            <span class="platform {{gse.platform.type}}">{{ gse.platform.name }}</span>
+        </td>
+        <td class="nowrap">{% for virus in gse.samples|map('virus_class')|unique -%}
+            {% set v_samples = gse.samples|select('virus_class_is', virus)|list %}
+            <a href="https://www.ncbi.nlm.nih.gov/gds?term={{ ('gsm[ETYP] AND ('+v_samples|join(' OR ', attribute='id')+')')|urlencode }}" target="_blank">
+            {{v_samples|length}}</a>&nbsp;{{ virus }}<br>
+            {%- endfor %}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

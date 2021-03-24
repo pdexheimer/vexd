@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Gene Search{% endblock %}
+{% block head %}
+    {{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='autocomplete.css') }}" />
+    <script src="{{ url_for('static', filename='autocomplete.js') }}"></script>
+    <script>
+        window.addEventListener("load", () => init_autocomplete(
+            document.getElementById("searchbox"),
+            "/api/gene_typeahead",
+            function(result, text) {
+                var symbol = result['symbol'];
+                output = "";
+                if (text.toUpperCase() == symbol.substr(0, text.length).toUpperCase()) {
+                    output += "<strong>"+symbol.substr(0, text.length)+"</strong>";
+                    output += symbol.substr(text.length);
+                } else {
+                    output += symbol;
+                    var foundAlias = false;
+                    if (text.toUpperCase() == result['ensembl_id'].substr(0, text.length).toUpperCase()) {
+                        foundAlias = true;
+                        output += " (<strong>"+result['ensembl_id'].substr(0, text.length)+"</strong>";
+                        output += result['ensembl_id'].substr(text.length)+")";
+                    }
+                    if (!foundAlias) {
+                        for (var i=0; i<result['alias'].length; i++) {
+                            var name = result['alias'][i];
+                            if (text.toUpperCase() == name.substr(0, text.length).toUpperCase()) {
+                                foundAlias = true;
+                                output += " (<strong>"+name.substr(0, text.length)+"</strong>";
+                                output += name.substr(text.length)+")";
+                                break;
+                            }
+                        }
+                    }
+                    if (!foundAlias) {
+                        for (var i=0; i<result['refseq'].length; i++) {
+                            var name = result['refseq'][i];
+                            if (text.toUpperCase() == name.substr(0, text.length).toUpperCase()) {
+                                foundAlias = true;
+                                output += " (<strong>"+name.substr(0, text.length)+"</strong>";
+                                output += name.substr(text.length)+")";
+                                break;
+                            }
+                        }
+                    }
+                }
+                return output+"<input type='hidden' value='" + result['ensembl_id'] + "'>";
+            }
+        ));
+    </script>
+{% endblock %}
+{% block body %}
+    <form autocomplete="off" action="{{ url_for('ui.display_gene_info') }}" method="GET">
+        <div class="autocomplete">
+            <input type="text" id="searchbox" size="50" name="q" placeholder="Gene symbol/ID" autofocus/>
+        </div>
+        <input type="submit" value="Search" />
+    </form>
+{% endblock %}

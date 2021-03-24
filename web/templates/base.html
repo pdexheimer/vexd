@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        {% block head %}
+        <title>{% block title %}{% endblock %}</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='general.css') }}" />
+        {% endblock %}
+    </head>
+    <body>
+        <nav>
+            <a href="{{ url_for('ui.app_home') }}">Home</a>
+            <a href="{{ url_for('ui.gene_search') }}">Gene Lookup</a>
+            <a href="{{ url_for('ui.geo_search') }}">GEO Lookup</a>
+            <a href="{{ url_for('ui.statistics') }}">Statistics</a>
+        </nav>
+        {% block body %}{% endblock %}
+    </body>
+</html>

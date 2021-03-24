@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}GEO Search{% endblock %}
+{% block head %}
+    {{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='autocomplete.css') }}" />
+    <script src="{{ url_for('static', filename='autocomplete.js') }}"></script>
+    <script>
+        window.addEventListener("load", () => init_autocomplete(
+            document.getElementById("searchbox"),
+            "/api/virus_typeahead",
+            function(result, text) {
+                var canon = result['species'];
+                output = "";
+                if (text.toUpperCase() == canon.substr(0, text.length).toUpperCase()) {
+                    output += "<i><strong>"+canon.substr(0, text.length)+"</strong>";
+                    output += canon.substr(text.length)+"</i>";
+                } else {
+                    output += "<i>"+canon+"</i>";
+                    var foundAlias = false;
+                    if (text.toUpperCase() == result['name'].substr(0, text.length).toUpperCase()) {
+                        foundAlias = true;
+                        output += " (<strong>"+result['name'].substr(0, text.length)+"</strong>";
+                        output += result['name'].substr(text.length)+")";
+                    }
+                    if (!foundAlias) {
+                        for (var i=0; i<result['aliases'].length; i++) {
+                            var name = result['aliases'][i];
+                            if (text.toUpperCase() == name.substr(0, text.length).toUpperCase()) {
+                                foundAlias = true;
+                                output += " (<strong>"+name.substr(0, text.length)+"</strong>";
+                                output += name.substr(text.length)+")";
+                                break;
+                            }
+                        }
+                    }
+                }
+                return output+"<input type='hidden' value='" + canon + "'>";
+            }
+        ));
+    </script>
+{% endblock %}
+{% block body %}
+    <form autocomplete="off" action="{{ url_for('ui.search_results') }}" method="GET">
+        <div class="autocomplete">
+            <input type="text" id="searchbox" size="50" name="q" placeholder="Virus name" autofocus/>
+        </div>
+        <input type="submit" value="Search" />
+    </form>
+{% endblock %}

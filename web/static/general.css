@@ -1,0 +1,91 @@
+nav {
+    overflow: hidden;
+    background-color: #e9e9e9;
+    margin-bottom: 1em;
+}
+nav a {
+    float: left;
+    text-align: center;
+    color: #333333;
+    padding: 0.6em 1em;
+    text-decoration: none;
+    font-size: 110%;   
+}
+nav a:hover {
+    background-color: #333333;
+    color: #e9e9e9e9;
+}
+input[type=text] {
+    box-sizing: border-box;
+    /*width: 100%;*/
+    border: 2px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px;
+    padding: 12px 20px 12px 20px;
+    background-color: white;
+}
+#searchbox {
+    padding: 12px 20px 12px 40px;
+    background-image: url('/static/searchicon.png');
+    background-position: 10px 10px; 
+    background-repeat: no-repeat;
+}
+.geo_icon {
+    height: 1em;
+}
+table {border-collapse: collapse;}
+td,th {
+    padding: 0.3em 1em;
+    border: 1px solid black;
+}
+.invalid {
+    color: maroon;
+}
+.species {
+    font-style: italic;
+}
+
+.gse_list tr:nth-child(even) {
+    background-color: gainsboro;
+}
+.gse_list tr:nth-child(odd) {
+    background-color: mintcream;
+}
+.gse_list td,th {
+    border: 0;
+}
+.gse_list .pubmed {
+    text-decoration: none;
+}
+.gse_list .geo_id {
+    font-size: larger;
+}
+.nowrap {
+    white-space: nowrap;
+}
+.gse_list .title {
+    font-size: 105%;
+}
+.gse_list .platform {
+    font-size: smaller;
+}
+.gse_list .microarray::before {
+    background-image: url(/static/array.png);
+    background-size: contain;
+    background-repeat: no-repeat;
+    height: 1.2em;
+    width: 1.2em;
+    display: inline-block;
+    padding-right: 0.4em;
+    content: "";
+}
+.gse_list .ngs::before {
+    background-image: url(/static/rnaseq.png);
+    background-size: contain;
+    background-repeat: no-repeat;
+    height: 1.2em;
+    width: 1.2em;
+    display: inline-block;
+    padding-right: 0.4em;
+    content: "";
+}

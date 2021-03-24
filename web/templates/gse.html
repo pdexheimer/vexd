@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% from "utils.html" import geo_accession_link, pubmed_link %}
+{% block title %}GEO Results{% endblock %}
+{% block body %}
+{% set commify=joiner(", ") %}
+<h1>{{ gse.id }} {{ geo_accession_link(gse.id, geo_icon=True) }}</h1>
+<h2>{{ gse.title|default("Title Unknown") }}</h2>
+<p>Submitted by {{ gse.submission.submitter }} ({{ gse.submission.institution }}, 
+    {{ gse.submission.country }}) on {{ gse.submission.date_str }}</p>
+<p><b>Platform:</b> {{ gse.platform.type }} &ndash; {{ gse.platform.name }} {{ geo_accession_link(gse.platform.id, geo_icon=True) }}</p>
+<p><b>Pubmed:</b> {% for pmid in gse.pubmed %}{{ commify() }}{{ pubmed_link(pmid) }}{% else %}<i>None listed</i>{% endfor %}</p>
+<p><b>Summary</b> {{ gse.summary|default('None')|replace("\n", "<br>"|safe) }}</p>
+<h3>{{ gse.samples|length }} {{ "Sample"|pluralize(gse.samples|length) }}</h3>
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Title</th>
+            <th>Cell Type</th>
+            <th>Timepoint</th>
+            <th>Reported Virus</th>
+            <th>Virus Species</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for sample in gse.samples %}
+        <tr>
+            <td>{{ geo_accession_link(sample.id) }}</td>
+            <td>{{ sample.title|default("Title Unknown") }}</td>
+            <td>{{ sample.cell_type }}</td>
+            <td>{{ sample.time_point }}</td>
+            <td>{{ sample.reported_virus }}</td>
+            <td>{% if 'normalized_virus' in sample -%}
+                <span {% if sample.normalized_virus != "Uninfected" %}class="species"{% endif %}>{{ sample.normalized_virus }}</span>
+                {%- endif %}</td>
+            <td>{% if not sample.valid_experiment -%}
+                <span class="invalid">{{ sample.invalid_reason }}</span>
+                {%- if 'extra_info' in sample %}: {{ sample.extra_info }}{% endif %}
+                {%- endif %}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

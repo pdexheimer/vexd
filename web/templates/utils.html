@@ -1,0 +1,8 @@
+{% macro geo_accession_link(acc, link_text='', geo_icon=False) -%}
+<a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc={{ acc }}" target="_blank">
+{%- if geo_icon %}<img src="/static/geo_main.gif" class="geo_icon" />{% else %}{{ link_text|default(acc, true) }}{% endif %}</a>
+{%- endmacro %}
+
+{%- macro pubmed_link(pmid, link_text='') -%}
+<a href="https://pubmed.ncbi.nlm.nih.gov/{{ pmid }}/" target="_blank" title="Pubmed: {{ pmid }}" class="pubmed">{{ link_text|default(pmid, true)|safe }}</a>
+{%- endmacro %}
