@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "utils.html" import cell_type %}
 {% block title %}Gene Results{% endblock %}
 {% block body %}
 <h1>{{ gene.symbol }}</h1>
@@ -25,7 +26,7 @@
         <tr>
             <td><a href="{{ url_for('ui.display_geo_entry', gse_id=result.study) }}">{{ result.study }}</a></td>
             <td><i>{{ result.virus }}</i></td>
-            <td>{{ result.cell_type }}</td>
+            <td>{{ cell_type(result) }}</td>
             <td>{{ result.control_mean|round(3) }}</td>
             <td>{{ result.infect_mean|round(3) }}</td>
             <td>{{ result.logfc|round(3) }}</td>

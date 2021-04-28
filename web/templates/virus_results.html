@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% from "utils.html" import cell_type %}
+{% block title %}Virus Results{% endblock %}
+{% block head %}
+{{ super() }}
+<style>
+    .genetable {
+        white-space: nowrap;
+    }
+    .genetable tr {
+        background-color: transparent !important;
+    }
+    .vertline {
+        border-right: 1px solid black !important;
+    }
+    .bottomline {
+        border-bottom: 1px solid black !important;
+    }
+</style>
+{% endblock %}
+{% block body %}
+{% if search_results|length == 0 %}
+<h1>No Results Found</h1>
+{% else %}
+<a href="{{ url_for('ui.heatmap', q=virus) }}">Heatmap</a><br>
+<table class="gse_list">
+    {% for comp in search_results %}
+    <tr>
+        <td>
+            <span class="geo_id"><a href="{{ url_for('ui.display_geo_entry', gse_id=comp.study) }}">{{ comp.study }}</a></span><br>
+            <span class="title">{{ comp.title|default("Unknown title") }}</span><br><br>
+            <i>{{ comp.virus }}</i><br>{{ cell_type(comp) }}<br>{{ comp.platform }}<br><br>
+            Infected samples: {{ comp.infect_count }}<br>
+            Control samples: {{ comp.control_count }}
+        </td>
+        <td>
+            {% if comp.counts.signif %}
+            <table class="genetable">
+                <tr><th colspan="6">{{ comp.counts.signif }} Significant Genes</th></tr>
+                <tr>
+                    <th colspan="3" class="vertline bottomline">{{ comp.counts.up }} Upregulated
+                        {% if comp.counts.up > 10 %}<small>(10 shown)</small>{% endif %}
+                    </th>
+                    <th colspan="3" class="bottomline">{{ comp.counts.down }} Downregulated
+                        {% if comp.counts.down > 10 %}<small>(10 shown)</small>{% endif %}
+                    </th>
+                </tr>
+                <tr>
+                    <th>Gene</th>
+                    <th>Change</th>
+                    <th class="vertline">BH p-val</th>
+                    <th>Gene</th>
+                    <th>Change</th>
+                    <th>BH p-val</th>
+                </tr>
+                {% for i in range([comp.up|length, comp.down|length]|max) %}
+                <tr>
+                    {% if i < comp.up|length %}
+                    <td>{{ comp.up[i].symbol }}</td>
+                    <td>&#x2191;&nbsp;{{ comp.up[i].fc|round(2) }}</td>
+                    <td class="vertline">{{ '{:.4g}'.format(comp.up[i].adj_p) }}</td>
+                    {% else %}
+                    <td></td><td></td><td class="vertline"></td>
+                    {% endif %}
+                    {% if i < comp.down|length %}
+                    <td>{{ comp.down[i].symbol }}</td>
+                    <td>&#x2193;&nbsp;{{ (1.0/comp.down[i].fc)|round(2) }}</td>
+                    <td>{{ '{:.4g}'.format(comp.down[i].adj_p) }}</td>
+                    {% else %}
+                    <td></td><td></td><td></td>
+                    {% endif %}
+                </tr>
+                {% endfor %}
+            </table>
+            {% else %}
+            <b>No Significant Genes</b>
+            {% endif %}
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+{% endif %}
+{% endblock %}

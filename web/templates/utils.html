@@ -1,8 +1,20 @@
 {% macro geo_accession_link(acc, link_text='', geo_icon=False) -%}
 <a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc={{ acc }}" target="_blank">
-{%- if geo_icon %}<img src="/static/geo_main.gif" class="geo_icon" />{% else %}{{ link_text|default(acc, true) }}{% endif %}</a>
+{%- if geo_icon %}<img src="{{ url_for('static', filename='geo_main.gif') }}" class="geo_icon" />{% else %}{{ link_text|default(acc, true) }}{% endif %}</a>
 {%- endmacro %}
 
 {%- macro pubmed_link(pmid, link_text='') -%}
 <a href="https://pubmed.ncbi.nlm.nih.gov/{{ pmid }}/" target="_blank" title="Pubmed: {{ pmid }}" class="pubmed">{{ link_text|default(pmid, true)|safe }}</a>
+{%- endmacro %}
+
+{%- macro cell_type(obj) -%}
+{% if obj.bto_id -%}
+{{obj.bto_name}}&nbsp;<a href="https://www.ebi.ac.uk/ols/ontologies/bto/terms?iri={{ ["http://purl.obolibrary.org/obo/", obj.bto_id|replace(":", "_")]|join|urlencode|replace("/", "%2F") }}"
+target="_blank"><img src="{{ url_for('static', filename='ols.png') }}" class="geo_icon" /></a>
+{%- else -%}
+<i>{{obj.cell_type}}</i>
+{%- endif %}
+{%- if obj.cellosaurus_id -%}
+&nbsp;[{{ obj.cellosaurus_name }}&nbsp;<a href="https://web.expasy.org/cellosaurus/{{ obj.cellosaurus_id }}" target="_blank"><img src="{{ url_for('static', filename='cellosaurus.jpg') }}" class="geo_icon" /></a>]
+{%- endif %}
 {%- endmacro %}

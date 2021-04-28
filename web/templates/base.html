@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
+        <meta charset="UTF-8">
         {% block head %}
         <title>{% block title %}{% endblock %}</title>
         <link rel="stylesheet" href="{{ url_for('static', filename='general.css') }}" />
@@ -8,9 +9,10 @@
     </head>
     <body>
         <nav>
-            <a href="{{ url_for('ui.app_home') }}">Home</a>
+            <a href="{{ url_for('ui.get_virus_genes') }}">Virus Response</a>
+            <a href="{{ url_for('ui.geo_search') }}">GEO Search</a>
             <a href="{{ url_for('ui.gene_search') }}">Gene Lookup</a>
-            <a href="{{ url_for('ui.geo_search') }}">GEO Lookup</a>
+            <a href="{{ url_for('ui.geo_lookup') }}">GEO Lookup</a>
             <a href="{{ url_for('ui.statistics') }}">Statistics</a>
         </nav>
         {% block body %}{% endblock %}
