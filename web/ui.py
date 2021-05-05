@@ -1,4 +1,5 @@
 from flask import Blueprint, render_template
+from flask.helpers import make_response
 from webargs import fields
 from webargs.flaskparser import use_kwargs
 from .geo import geo
@@ -8,6 +9,12 @@ bp = Blueprint('ui', __name__, url_prefix='/')
 @bp.route('/')
 def get_virus_genes():
     return render_template('search_virus.html')
+
+@bp.route('/general.css')
+def general_css():
+    response = make_response(render_template('general.css'))
+    response.content_type = 'text/css'
+    return response
 
 @bp.route('/virus')
 @use_kwargs({'q': fields.Str()}, location='query')

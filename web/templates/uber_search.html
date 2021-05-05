@@ -7,7 +7,7 @@
     <script>
         window.addEventListener("load", () => init_autocomplete(
             document.getElementById("searchbox"),
-            "/api/virus_typeahead",
+            "{{ url_for('api.virus_typeahead', text='') }}",
             function(result, text) {
                 var canon = result['species'];
                 output = "";

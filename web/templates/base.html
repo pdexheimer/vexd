@@ -4,7 +4,7 @@
         <meta charset="UTF-8">
         {% block head %}
         <title>{% block title %}{% endblock %}</title>
-        <link rel="stylesheet" href="{{ url_for('static', filename='general.css') }}" />
+        <link rel="stylesheet" href="{{ url_for('ui.general_css') }}" type="text/css" />
         {% endblock %}
     </head>
     <body>

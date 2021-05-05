@@ -26,7 +26,7 @@ input[type=text] {
 }
 #searchbox {
     padding: 12px 20px 12px 40px;
-    background-image: url('/static/searchicon.png');
+    background-image: url({{ url_for('static', filename='searchicon.png') }});
     background-position: 10px 10px; 
     background-repeat: no-repeat;
 }
@@ -70,7 +70,7 @@ td,th {
     font-size: smaller;
 }
 .gse_list .microarray::before {
-    background-image: url(/static/array.png);
+    background-image: url({{ url_for('static', filename='array.png') }});
     background-size: contain;
     background-repeat: no-repeat;
     height: 1.2em;
@@ -80,7 +80,7 @@ td,th {
     content: "";
 }
 .gse_list .ngs::before {
-    background-image: url(/static/rnaseq.png);
+    background-image: url({{ url_for('static', filename='rnaseq.png') }});
     background-size: contain;
     background-repeat: no-repeat;
     height: 1.2em;
