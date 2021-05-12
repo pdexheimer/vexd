@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Methods{% endblock %}
+{% block body %}
+<h1>Methods</h1>
+<h2>Virus Nomenclature</h2>
+<p>Viruses are specified at the species level, as defined in the <a href="https://talk.ictvonline.org/files/master-species-lists/">ICTV Master Species List</a>, version 2018b.v2.  Human-infecting viruses were identified based on annotations in <a href="https://viralzone.expasy.org/678">ViralZone</a>, <a href="https://www.uniprot.org/taxonomy/?query=host:9606">UniProt</a>, the <a href="https://www.genome.jp/virushostdb/view/?host_lineage=Homo%20sapiens">Virus-Host DB</a>, <a href="https://doi.org/10.1098/rstb.2001.0888">Taylor <i>et al</i>, 2001</a>, and <a href="https://doi.org/10.1098/rstb.2011.0354">Woolhouse <i>et al</i>, 2012</a>.  Virus aliases and synonyms were derived from the same sources.</p>
+<h2>GEO Study Identification</h2>
+<p>GEO study descriptions were downloaded in SOFT format. Only sample that were annotated as human, and with a platform of Affymetrix microarray or Illumina RNA-seq were considered. An in-house tool was used to search these records for instances of any virus name or alias. Candidate samples were manually curated.</p>
+<h2>Microarray Processing</h2>
+<p>Microarrays were processed using the <a href="https://www.thermofisher.com/us/en/home/life-science/microarray-analysis/microarray-analysis-partners-programs/affymetrix-developers-network/affymetrix-power-tools.html">Affymetrix Power Tools</a> (v1.15.1) and the <a href="http://brainarray.mbni.med.umich.edu/Brainarray/Database/CustomCDF/CDF_download.asp">BrainArray Custom CDF</a> (v25, Ensembl genes). All samples using the same CDF (as specified in the CEL file header) were processed together, using the command line <code>apt-probeset-summarize -d &lt;CDF file&gt; --chip-type &lt;BrainArray name&gt; --chip-type &lt;Affymetrix name&gt; -a rma-sketch &lt;CEL files&gt;</code>. Following QC (see below), the passing samples were rerun with the same command line to yield the final values. Thus, microarray values are RMA-normalized and in log<sub>2</sub> space.</p>
+<h2>RNA-Seq Processing</h2>
+<p>FASTQ files for all samples were download from SRA using <code>fasterq-dump</code> from version 2.10.8 of <a href="https://github.com/ncbi/sra-tools">SRA Tools</a>. FASTQs were then quantified using <a href="https://pachterlab.github.io/kallisto/">kallisto</a> v0.46.0 and the Ensembl 102 cDNA definitions (<a href="ftp://ftp.ensembl.org/pub/release-102/fasta/homo_sapiens/cdna//Homo_sapiens.GRCh38.cdna.all.fa.gz">Direct link</a>). This version of Ensembl was used to match the version used for the BrainArray microarray annotations. The precise command line differed based on the Library Layout as annotated in SRA:</p>
+<p>For Single-End libraries:</p>
+<p><code>kallisto quant -i &lt;kallisto index&gt; --single --bias -l 300 -s 30 -o &lt;output directory&gt; &lt;FASTQ files&gt;</code></p>
+<p>For Paired-End libraries:</p>
+<p><code>kallisto quant -i &lt;kallisto index&gt; --bias -o &lt;output directory&gt; &lt;FASTQ files&gt;</code></p>
+<p>TBD: Which measure (TPM or counts) will be used/presented?</p>
+<h2>Quality Control</h2>
+<p><b>Microarrays</b> were removed if they had either <code>mad_residual_mean &gt; 0.80</code> OR <code>pm_mean &lt; 65</code>.  The first metric quantifies the error in the RMA model applied to the probeset, while the second is an indicator of the overall &quot;brightness&quot; of the array.  These metrics removed ~3% of eligible samples.</p>
+<p><b>RNA-seq</b> samples: TBD</p>
+<p>If 60% or more of the samples from a study were unavailable - either because they failed QC or the raw data was not available - the study was removed.</p>
+<h2>Differential Analyses</h2>
+<p>All differential analyses used a two-sided Welch's T-test (unequal variance) with Benjamini-Hochberg correction. Comparisons were performed within a single study, cell type, and platform, and were only performed when at least three samples were present for both the infected and uninfected condition.</p>
+{% endblock %}

@@ -32,15 +32,15 @@ def display_geo_entry(gse_id):
 def display_gene_info(q):
     return render_template('gene.html', gene=geo().get_gene_info(q), gene_results=geo().get_results_by_gene(q))
 
-@bp.route('geo_lookup/')
+@bp.route('/geo_lookup')
 def geo_lookup():
     return render_template('geo_search.html')
 
-@bp.route('gene_lookup/')
+@bp.route('/gene_lookup')
 def gene_search():
     return render_template('gene_search.html')
 
-@bp.route('geo_search/')
+@bp.route('/geo_search')
 def geo_search():
     return render_template('uber_search.html')
 
@@ -61,3 +61,7 @@ def heatmap(q):
         genes=geo().get_significant_genes_by_virus(virus_name=q),
         studies=geo().get_studies_by_virus(q)
     )
+
+@bp.route('/methods')
+def methods():
+    return render_template('methods.html')
