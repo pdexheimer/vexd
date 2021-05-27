@@ -18,7 +18,7 @@
 <h2>Quality Control</h2>
 <p><b>Microarrays</b> were removed if they had either <code>mad_residual_mean &gt; 0.80</code> OR <code>pm_mean &lt; 65</code>.  The first metric quantifies the error in the RMA model applied to the probeset, while the second is an indicator of the overall &quot;brightness&quot; of the array.  These metrics removed ~3% of eligible samples.</p>
 <p><b>RNA-seq</b> samples: TBD</p>
-<p>If 60% or more of the samples from a study were unavailable - either because they failed QC or the raw data was not available - the study was removed.</p>
+<p>If 40% or more of the samples from a study were unavailable - either because they failed QC or the raw data was not available - the study was removed.</p>
 <h2>Differential Analyses</h2>
 <p>All differential analyses used a two-sided Welch's T-test (unequal variance) with Benjamini-Hochberg correction. Comparisons were performed within a single study, cell type, and platform, and were only performed when at least three samples were present for both the infected and uninfected condition.</p>
 {% endblock %}

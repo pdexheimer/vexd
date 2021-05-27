@@ -137,38 +137,39 @@ class GeoSearch:
         # 8) lookup - get the top num_genes downregulated genes
         # 9) sort - by decreasing number of significant genes
         result = self.results.aggregate([
-            { '$match': { 'virus': virus_name } }, 
-            { '$group': {
-                    '_id': {
-                        'study': '$study',
-                        'cell_type': '$cell_type',
-                        'platform': '$platform',
-                        'virus': '$virus',
-                        'bto_id': '$bto_id',
-                        'bto_name': '$bto_name',
-                        'cellosaurus_id': '$cellosaurus_id',
-                        'cellosaurus_name': '$cellosaurus_name'
-                    },
-                    'infect_count': { '$first': '$infect_count' },
-                    'control_count': { '$first': '$control_count' },
-                }
-            }, 
-            { '$lookup': {
-                    'from': 'geo',
-                    'let': { 'studyid': '$_id.study' },
-                    'pipeline': [
-                        { '$match': { '$expr': { '$eq': ['$id', '$$studyid'] } } }, 
-                        { '$project': { '_id': 0, 'title': 1 } }
-                    ],
-                    'as': 'geo'
-                }
+            {'$match': {'virus': virus_name}},
+            {'$group': {
+                '_id': {
+                    'study': '$study',
+                    'cell_type': '$cell_type',
+                    'platform': '$platform',
+                    'virus': '$virus',
+                    'bto_id': '$bto_id',
+                    'bto_name': '$bto_name',
+                    'cellosaurus_id': '$cellosaurus_id',
+                    'cellosaurus_name': '$cellosaurus_name'
+                },
+                'infect_count': {'$first': '$infect_count'},
+                'control_count': {'$first': '$control_count'},
+            }
+            },
+            {'$lookup': {
+                'from': 'geo',
+                'let': {'studyid': '$_id.study'},
+                'pipeline': [
+                    {'$match': {'$expr': {'$eq': ['$id', '$$studyid']}}},
+                    {'$project': {'_id': 0, 'title': 1}}
+                ],
+                'as': 'geo'
+            }
             }, {
                 '$replaceRoot': {
-                    'newRoot': { '$mergeObjects': [ 
-                        {'$arrayElemAt': ['$geo', 0]}, 
+                    'newRoot': {'$mergeObjects': [
+                        {'$arrayElemAt': ['$geo', 0]},
                         '$_id',
-                        { 'infect_count': '$infect_count', 'control_count': '$control_count' }
-                    ] }
+                        {'infect_count': '$infect_count',
+                            'control_count': '$control_count'}
+                    ]}
                 }
             }, {
                 '$lookup': {
@@ -183,34 +184,34 @@ class GeoSearch:
                             '$match': {
                                 '$expr': {
                                     '$and': [
-                                        { '$eq': ['$$study', '$study'] }, 
-                                        { '$eq': ['$$cell_type', '$cell_type'] }, 
-                                        { '$eq': ['$$platform', '$platform'] }, 
-                                        { '$lte': ['$adj_p', pval_cutoff] }, 
-                                        { '$or': [
-                                                { '$gte': ['$logfc', logfc_cutoff] }, 
-                                                { '$lte': ['$logfc', -logfc_cutoff] }
-                                        ] }
+                                        {'$eq': ['$$study', '$study']},
+                                        {'$eq': ['$$cell_type', '$cell_type']},
+                                        {'$eq': ['$$platform', '$platform']},
+                                        {'$lte': ['$adj_p', pval_cutoff]},
+                                        {'$or': [
+                                            {'$gte': ['$logfc', logfc_cutoff]},
+                                            {'$lte': ['$logfc', -logfc_cutoff]}
+                                        ]}
                                     ]
                                 }
                             }
                         }, {
                             '$group': {
                                 '_id': None,
-                                'signif': { '$sum': 1 },
-                                'down': { '$sum': { '$cond': [ {'$lt': ['$logfc', 0]}, 1, 0 ] } },
-                                'up': { '$sum': { '$cond': [ {'$gt': ['$logfc', 0]}, 1, 0 ] } }
+                                'signif': {'$sum': 1},
+                                'down': {'$sum': {'$cond': [{'$lt': ['$logfc', 0]}, 1, 0]}},
+                                'up': {'$sum': {'$cond': [{'$gt': ['$logfc', 0]}, 1, 0]}}
                             }
-                        }, 
-                        { '$project': { '_id': 0 } }
+                        },
+                        {'$project': {'_id': 0}}
                     ],
                     'as': 'counts'
                 }
-            }, 
-            { '$set': { 'counts': { '$mergeObjects': [
+            },
+            {'$set': {'counts': {'$mergeObjects': [
                 {'signif': 0, 'up': 0, 'down': 0},
-                {'$arrayElemAt': [ '$counts', 0 ]}
-                ] } } }, 
+                {'$arrayElemAt': ['$counts', 0]}
+            ]}}},
             {
                 '$lookup': {
                     'from': 'results',
@@ -224,17 +225,17 @@ class GeoSearch:
                             '$match': {
                                 '$expr': {
                                     '$and': [
-                                        { '$eq': ['$$study', '$study'] }, 
-                                        { '$eq': ['$$cell_type', '$cell_type'] }, 
-                                        { '$eq': ['$$platform', '$platform'] }, 
-                                        { '$lte': ['$adj_p', pval_cutoff] }, 
-                                        { '$gte': ['$logfc', logfc_cutoff] }
+                                        {'$eq': ['$$study', '$study']},
+                                        {'$eq': ['$$cell_type', '$cell_type']},
+                                        {'$eq': ['$$platform', '$platform']},
+                                        {'$lte': ['$adj_p', pval_cutoff]},
+                                        {'$gte': ['$logfc', logfc_cutoff]}
                                     ]
                                 }
                             }
-                        }, 
-                        { '$sort': { 'logfc': -1, 'adj_p': 1 } }, 
-                        { '$limit': num_genes }, 
+                        },
+                        {'$sort': {'logfc': -1, 'adj_p': 1}},
+                        {'$limit': num_genes},
                         {
                             '$lookup': {
                                 'from': 'genes',
@@ -249,7 +250,7 @@ class GeoSearch:
                                 'logfc': 1,
                                 'fc': 1,
                                 '_id': 0,
-                                'symbol': { '$arrayElemAt': ['$symbol', 0] }
+                                'symbol': {'$arrayElemAt': ['$symbol', 0]}
                             }
                         }, {
                             '$addFields': {
@@ -260,7 +261,7 @@ class GeoSearch:
                     ],
                     'as': 'up'
                 }
-            }, 
+            },
             {
                 '$lookup': {
                     'from': 'results',
@@ -274,17 +275,17 @@ class GeoSearch:
                             '$match': {
                                 '$expr': {
                                     '$and': [
-                                        { '$eq': ['$$study', '$study'] }, 
-                                        { '$eq': ['$$cell_type', '$cell_type'] }, 
-                                        { '$eq': ['$$platform', '$platform'] }, 
-                                        { '$lte': ['$adj_p', pval_cutoff] }, 
-                                        { '$lte': ['$logfc', -logfc_cutoff] }
+                                        {'$eq': ['$$study', '$study']},
+                                        {'$eq': ['$$cell_type', '$cell_type']},
+                                        {'$eq': ['$$platform', '$platform']},
+                                        {'$lte': ['$adj_p', pval_cutoff]},
+                                        {'$lte': ['$logfc', -logfc_cutoff]}
                                     ]
                                 }
                             }
-                        }, 
-                        { '$sort': { 'logfc': 1, 'adj_p': 1 } }, 
-                        { '$limit': num_genes }, 
+                        },
+                        {'$sort': {'logfc': 1, 'adj_p': 1}},
+                        {'$limit': num_genes},
                         {
                             '$lookup': {
                                 'from': 'genes',
@@ -299,7 +300,7 @@ class GeoSearch:
                                 'logfc': 1,
                                 'fc': 1,
                                 '_id': 0,
-                                'symbol': { '$arrayElemAt': ['$symbol', 0] }
+                                'symbol': {'$arrayElemAt': ['$symbol', 0]}
                             }
                         }, {
                             '$addFields': {
@@ -311,7 +312,7 @@ class GeoSearch:
                     'as': 'down'
                 }
             },
-            { '$sort': { 'counts.signif': -1 } }
+            {'$sort': {'counts.signif': -1}}
         ])
         return list(result)
 
@@ -326,15 +327,15 @@ class GeoSearch:
         # 7) unwind - now that we only have sig genes, unwind them for sorting
         # 8) sort - to get the studies array into a consistent order
         # 9) group - everything by probeset again
-        #10) sort - the results by gene symbol
+        # 10) sort - the results by gene symbol
         result = self.results.aggregate([
-            { '$match': { 'virus': virus_name } }, 
-            { '$group': {
+            {'$match': {'virus': virus_name}},
+            {'$group': {
                 '_id': '$probeset_id',
                 'ensembl_id': {'$first': '$ensembl_id'},
                 'studies': {'$push': '$$ROOT'}
             }},
-            { '$match': {
+            {'$match': {
                 'studies': {
                     '$elemMatch': {
                         'adj_p': {'$lte': pval_cutoff},
@@ -345,34 +346,34 @@ class GeoSearch:
                     }
                 }
             }},
-            { '$lookup': {
+            {'$lookup': {
                 'from': 'genes',
                 'localField': 'ensembl_id',
                 'foreignField': 'ensembl_id',
                 'as': 'symbol'
             }},
-            { '$set': {
+            {'$set': {
                 'symbol': {
                     '$mergeObjects': [
-                       {'symbol': ''},
-                       {'$arrayElemAt': ['$symbol', 0]} 
+                        {'symbol': ''},
+                        {'$arrayElemAt': ['$symbol', 0]}
                     ]
                 }
             }},
-            { '$set': {'symbol': '$symbol.symbol'}},
-            { '$unwind': {'path': '$studies'}},
-            { '$sort': {
+            {'$set': {'symbol': '$symbol.symbol'}},
+            {'$unwind': {'path': '$studies'}},
+            {'$sort': {
                 'studies.study': 1,
                 'studies.cell_type': 1,
                 'studies.platform': 1
             }},
-            { '$group': {
+            {'$group': {
                 '_id': '$_id',
                 'ensembl_id': {'$first': '$ensembl_id'},
                 'symbol': {'$first': '$symbol'},
                 'studies': {'$push': '$studies'}
             }},
-            { '$sort': {'symbol': 1}}
+            {'$sort': {'symbol': 1}}
         ], allowDiskUse=True)
         return list(result)
 
@@ -383,24 +384,209 @@ class GeoSearch:
         # 3) project - reformat the results
         # 4) sort - put them in a consistent order
         result = self.results.aggregate([
-            { '$match': { 'virus': virus_name } }, 
-            { '$group': { '_id': {
+            {'$match': {'virus': virus_name}},
+            {'$group': {'_id': {
                 'study': '$study',
                 'cell_type': '$cell_type',
                 'bto_name': '$bto_name',
                 'platform': '$platform'
             }}},
-            { '$project': {
+            {'$project': {
                 'study': '$_id.study',
                 'cell_type': '$_id.cell_type',
                 'bto_name': '$_id.bto_name',
                 'platform': '$_id.platform',
                 '_id': 0
             }},
-            { '$sort': {
+            {'$sort': {
                 'study': 1,
                 'cell_type': 1,
                 'platform': 1
             }}
+        ])
+        return list(result)
+
+    def search_studies(self, virus_name, pval_cutoff=0.05, logfc_cutoff=1):
+        #  1) match: Restrict to only studies of interest
+        #            Partially redundant with #3, but will make #2 faster
+        #  2) unwind: Work on the sample level
+        #  3) match: Restrict to only samples of interest
+        #  4) group: By study, cell type, platform, and virus
+        #  5) lookup: Collect the controls for this comparison
+        #  6) lookup: Count the number of significant genes
+        #  7) lookup: Get the study title
+        #  8) lookup: Collect the missing_sample_reasons
+        #  9) lookup: Collect the missing_control_reasons
+        # 10) replaceRoot: Promote fields from #4-9 (except 5) to top level,
+        #                  remove samples/controls that have a 'missing_reason' field
+        # 11) set: Flag the comparisons which don't have enough samples
+        # 12) sort: by # significant genes (descending), move the small comparisons to the end
+        result = self.geo.aggregate([
+            { '$match': {'samples.normalized_virus': virus_name} },
+            { '$unwind': {'path': '$samples'} },
+            { '$match': {
+                    'samples.valid_experiment': True,
+                    'samples.normalized_virus': virus_name
+                } },
+            { '$group': {
+                    '_id': {
+                        'study': '$id',
+                        'bto_name': '$samples.bto_name',
+                        'virus': '$samples.normalized_virus',
+                        'platform': '$samples.cdf',
+                        'bto_id': '$samples.bto_id',
+                        'cellosaurus_name': '$samples.cellosaurus_name',
+                        'cellosaurus_id': '$samples.cellosaurus_id',
+                        'cell_type': '$samples.cell_type'
+                    },
+                    'samples': { '$push': '$samples' }
+                } },
+            { '$lookup': {
+                    'from': 'geo',
+                    'as': 'controls',
+                    'let': {
+                        'study': '$_id.study',
+                        'cell_type': '$_id.bto_name',
+                        'platform': '$_id.platform'
+                    },
+                    'pipeline': [
+                        { '$match': { '$expr': {'$eq': ['$id', '$$study'] } } },
+                        { '$unwind': {'path': '$samples'} }, 
+                        { '$match': { '$expr': {
+                            '$and': [
+                                { '$eq': ['$samples.normalized_virus', 'Uninfected'] },
+                                { '$eq': ['$samples.valid_experiment', True] },
+                                { '$eq': ['$id', '$$study'] },
+                                { '$eq': ['$samples.cdf', '$$platform'] },
+                                { '$eq': ['$samples.bto_name', '$$cell_type'] }
+                            ] } } }, 
+                        { '$replaceRoot': {'newRoot': '$samples'} }
+                    ]
+                } }, 
+            { '$lookup': {
+                    'from': 'results',
+                    'let': {
+                        'study': '$_id.study',
+                        'cell_type': '$_id.bto_name',
+                        'platform': '$_id.platform',
+                        'virus': '$_id.virus'
+                    },
+                    'pipeline': [
+                        { '$match': { '$expr': {
+                            '$and': [
+                                { '$eq': ['$$study', '$study'] },
+                                { '$eq': ['$$cell_type', '$bto_name'] },
+                                { '$eq': ['$$platform', '$platform'] },
+                                { '$eq': ['$$virus', '$virus'] },
+                                { '$lte': ['$adj_p', pval_cutoff] },
+                                { '$or': [
+                                    { '$gte': ['$logfc', logfc_cutoff] },
+                                    { '$lte': ['$logfc', -logfc_cutoff] }
+                                ] }
+                            ] } } },
+                        { '$group': {
+                            '_id': None,
+                            'signif': { '$sum': 1 },
+                            'down': { '$sum': {'$cond': [{'$lt': ['$logfc', 0]}, 1, 0]} },
+                            'up': { '$sum': {'$cond': [{'$gt': ['$logfc', 0]}, 1, 0]} }
+                            } },
+                        { '$project': {'_id': 0} }
+                    ],
+                    'as': 'gene_count'
+                } },
+            { '$lookup': {
+                    'from': 'geo',
+                    'let': {'studyid': '$_id.study'},
+                    'pipeline': [
+                        {'$match': {'$expr': {'$eq': ['$id', '$$studyid']}}},
+                        {'$project': {'_id': 0, 'title': 1}}
+                    ],
+                    'as': 'geo' 
+                } },
+            { '$lookup': {
+                    'from': 'geo',
+                    'let': {
+                        'study': '$_id.study',
+                        'cell_type': '$_id.bto_name',
+                        'platform': '$_id.platform',
+                        'virus': '$_id.virus'
+                        },
+                    'pipeline': [
+                        {'$match': { '$expr': {'$eq': ['$id', '$$study'] }}},
+                        {'$unwind': { 'path': '$samples' }},
+                        {'$match': {'$expr': {
+                            '$and': [
+                                {'$eq': ['$samples.valid_experiment', True]},
+                                {'$eq': ['$samples.normalized_virus', '$$virus']},
+                                {'$eq': ['$samples.bto_name', '$$cell_type']},
+                                {'$eq': ['$samples.cdf', '$$platform']}
+                            ]
+                        } } },
+                        {'$group': {
+                            '_id': '$samples.missing_reason',
+                            'count': {'$sum': 1}
+                        }}
+                    ],
+                    'as': 'missing_sample_reasons'
+                } },
+            { '$lookup': {
+                    'from': 'geo',
+                    'let': {
+                        'study': '$_id.study',
+                        'cell_type': '$_id.bto_name',
+                        'platform': '$_id.platform'
+                        },
+                    'pipeline': [
+                        {'$match': { '$expr': {'$eq': ['$id', '$$study'] }}},
+                        {'$unwind': { 'path': '$samples' }},
+                        {'$match': {'$expr': {
+                            '$and': [
+                                {'$eq': ['$samples.valid_experiment', True]},
+                                {'$eq': ['$samples.normalized_virus', 'Uninfected']},
+                                {'$eq': ['$samples.bto_name', '$$cell_type']},
+                                {'$eq': ['$samples.cdf', '$$platform']}
+                            ]
+                        } } },
+                        {'$group': {
+                            '_id': '$samples.missing_reason',
+                            'count': {'$sum': 1}
+                        }}
+                    ],
+                    'as': 'missing_control_reasons'
+                } },
+            { '$replaceRoot': {'newRoot': {
+                    '$mergeObjects': [
+                        '$_id', 
+                        {'$arrayElemAt': ['$gene_count', 0]},
+                        {'$arrayElemAt': ['$geo', 0]},
+                        {
+                            'pf_samples': {
+                                '$filter': {
+                                    'input': '$samples',
+                                    'cond': {'$eq': [{'$type': '$$this.missing_reason'}, 'missing']}
+                                }
+                            },
+                            'samples': '$samples',
+                            'pf_controls': {
+                                '$filter': {
+                                    'input': '$controls',
+                                    'cond': {'$eq': [{'$type': '$$this.missing_reason'}, 'missing']}
+                                }
+                            },
+                            'controls': '$controls',
+                            'missing_sample_reasons': '$missing_sample_reasons',
+                            'missing_control_reasons': '$missing_control_reasons',
+                } ] } }},
+            { '$set': {
+                    'enough_samples': { '$and': [
+                        { '$gte': [{'$size': '$pf_samples'}, 2] },
+                        { '$gte': [{'$size': '$pf_controls'}, 2] }
+                    ] },
+                    'study_order': { '$toInt': { '$ltrim': {
+                        'input': '$study',
+                        'chars': 'GSE'
+                    } } }
+                }},
+            { '$sort': { 'signif': -1, 'enough_samples': -1, 'study_order': 1 } }
         ])
         return list(result)

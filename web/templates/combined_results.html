@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% from "utils.html" import cell_type %}
+{% block title %}Results{% endblock %}
+{% macro filtered_count(total, pf, reasons) -%}
+{% if total == pf %}{{ pf }}{% else -%}
+{% set line_break=joiner("&#010;"|safe) %}
+<span style="text-decoration-line: line-through">{{ total }}</span> {{ pf }}
+<span style="background-color: yellow; cursor: pointer" title="
+{% for el in reasons if el._id is not none %}{{ line_break() }}{{ el._id }}: {{ el.count }}{% endfor %}
+">&#x26A0;</span>
+{%- endif %}
+{%- endmacro %}
+{% block body %}
+<table class="gse_list" style="max-width: 65em">
+    <thead>
+        <tr>
+            <th>Study</th>
+            <th>Title</th>
+            <th>Analyzed Samples</th>
+            <th>Significant Genes</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for result in search_results %}
+        <tr>
+            <td><span class="geo_id"><a href="{{ url_for('ui.display_geo_entry', gse_id=result.study) }}">{{ result.study }}</a></span><br>
+            <i>{{ result.virus }}</i><br>
+            {{ cell_type(result) }}<br>
+            {{ result.platform|default('RNA-seq') }}</td>
+            <td style="max-width: 30%; width: 30%">{{ result.title }}</td>
+            <td>Virus: {{ filtered_count(result.samples|length, result.pf_samples|length, result.missing_sample_reasons) }}<br>
+            Control: {{ filtered_count(result.controls|length, result.pf_controls|length, result.missing_control_reasons) }}</td>
+            <td><span class="geo_id">{% if result.pf_samples|length < 2 or result.pf_controls|length < 2 %}--{% else -%}
+            {{ result.signif|default(0) }}{% endif %}</span>{% if result.signif|default(0) > 0 -%}
+            &nbsp;({{ result.up|default(0) }}&nbsp;&#x2191; / {{ result.down|default(0) }}&nbsp;&#x2193;)
+            {%- endif %}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}

@@ -19,7 +19,8 @@ def general_css():
 @bp.route('/virus')
 @use_kwargs({'q': fields.Str()}, location='query')
 def virus_results(q):
-    return render_template('virus_results.html', virus=q, search_results=geo().get_gene_results_by_virus(q))
+    return render_template('combined_results.html', virus=q, search_results=geo().search_studies(q))
+    #return render_template('virus_results.html', virus=q, search_results=geo().get_gene_results_by_virus(q))
 
 @bp.route('/geo/', defaults={'gse_id': None})
 @bp.route('/geo/<gse_id>')
