@@ -17,10 +17,9 @@
             <th>ID</th>
             <th>Title</th>
             <th>Cell Type</th>
-            <th>Timepoint</th>
             <th>Reported Virus</th>
             <th>Virus Species</th>
-            <th></th>
+            <th>Exclusion Reason</th>
         </tr>
     </thead>
     <tbody>
@@ -29,14 +28,22 @@
             <td>{{ geo_accession_link(sample.id) }}</td>
             <td>{{ sample.title|default("Title Unknown") }}</td>
             <td>{{ cell_type(sample) }}</td>
-            <td>{{ sample.time_point }}</td>
             <td>{{ sample.reported_virus }}</td>
             <td>{% if 'normalized_virus' in sample -%}
                 <span {% if sample.normalized_virus != "Uninfected" %}class="species"{% endif %}>{{ sample.normalized_virus }}</span>
                 {%- endif %}</td>
             <td>{% if not sample.valid_experiment -%}
-                <span class="invalid">{{ sample.invalid_reason }}</span>
-                {%- if 'extra_info' in sample %}: {{ sample.extra_info }}{% endif %}
+                    <span class="invalid">{{ sample.invalid_reason }}</span>
+                    {%- if 'extra_info' in sample %}<br>{{ sample.extra_info }}{% endif %}
+                {%- elif 'missing_reason' in sample -%}
+                    <span class="invalid">Data failed QC</span>
+                    {%- if sample.missing_reason == "Sample failed QC" -%}
+                        {%- if sample.pm_mean < 65 %}<br><code>pm_mean</code> is {{ sample.pm_mean }} (low signal, below threshold of 60){% endif -%}
+                        {%- if sample.all_probeset_mad_residual_mean > 0.8 %}<br><code>all_probeset_mad_residual_mean</code> is {{ sample.all_probeset_mad_residual_mean }} (poor normalization, above threshold of 0.80){% endif -%}
+                    {%- elif sample.missing_reason == "Study failed QC" -%}
+                        <br>At least 40% of samples in study failed QC
+                    {%- else %}<br>{{ sample.missing_reason }}
+                    {%- endif -%}
                 {%- endif %}</td>
         </tr>
         {% endfor %}

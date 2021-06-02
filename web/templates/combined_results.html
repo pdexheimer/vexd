@@ -3,13 +3,49 @@
 {% block title %}Results{% endblock %}
 {% macro filtered_count(total, pf, reasons) -%}
 {% if total == pf %}{{ pf }}{% else -%}
-{% set line_break=joiner("&#010;"|safe) %}
+{% set line_break=joiner("<br>"|safe) %}
 <span style="text-decoration-line: line-through">{{ total }}</span> {{ pf }}
-<span style="background-color: yellow; cursor: pointer" title="
-{% for el in reasons if el._id is not none %}{{ line_break() }}{{ el._id }}: {{ el.count }}{% endfor %}
-">&#x26A0;</span>
+<span class="tooltip">&#x26A0;
+    <span class="tooltiptext">{% for el in reasons if el._id is not none %}{{ line_break() }}{{ el._id }}: {{ el.count }}{% endfor %}</span>
+</span>
 {%- endif %}
 {%- endmacro %}
+{% block head %}
+    {{ super() }}
+    <style>
+        .tooltip {
+            position: relative;
+            background-color: yellow;
+            cursor: default;
+        }
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 16em;
+            background-color: black;
+            color: white;
+            font-size: smaller;
+            text-align: center;
+            padding: 5px 0;
+            border-radius: 6px;
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            margin-left: -8em;
+            z-index: 1;
+        }
+        .tooltip:hover .tooltiptext { visibility: visible; }
+        .tooltip .tooltiptext::after {
+            content: " ";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: black transparent transparent transparent;
+        }
+    </style>
+{% endblock %}
 {% block body %}
 <table class="gse_list" style="max-width: 65em">
     <thead>
