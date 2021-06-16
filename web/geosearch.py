@@ -15,6 +15,7 @@ class GeoSearch:
         self.virus = self.client.vexd.viruses
         self.genes = self.client.vexd.genes
         self.results = self.client.vexd.results
+        self.bto = self.client.vexd.bto
         self.no_id = {'_id': False}
 
     def get_gse_info(self, gse_id):
@@ -406,7 +407,7 @@ class GeoSearch:
         ])
         return list(result)
 
-    def search_studies(self, virus_name, pval_cutoff=0.05, logfc_cutoff=1):
+    def search_studies(self, virus_name, tissue, use_descendants, pval_cutoff=0.05, logfc_cutoff=1):
         #  1) match: Restrict to only studies of interest
         #            Partially redundant with #3, but will make #2 faster
         #  2) unwind: Work on the sample level
@@ -421,13 +422,22 @@ class GeoSearch:
         #                  remove samples/controls that have a 'missing_reason' field
         # 11) set: Flag the comparisons which don't have enough samples
         # 12) sort: by # significant genes (descending), move the small comparisons to the end
+        initial_filter = {'samples.valid_experiment': True}
+        if virus_name:
+            initial_filter['samples.normalized_virus'] = virus_name
+        if tissue:
+            if use_descendants:
+                target_ids = self.get_descendants_of_bto_term(tissue)
+                initial_filter['samples.bto_id'] = { '$in': target_ids }
+            else:
+                initial_filter['samples.bto_id'] = tissue
+        second_filter = dict(initial_filter)
+        if not virus_name:
+            second_filter['samples.normalized_virus'] = { '$ne': 'Uninfected' }
         result = self.geo.aggregate([
-            { '$match': {'samples.normalized_virus': virus_name} },
+            { '$match': initial_filter },
             { '$unwind': {'path': '$samples'} },
-            { '$match': {
-                    'samples.valid_experiment': True,
-                    'samples.normalized_virus': virus_name
-                } },
+            { '$match': second_filter },
             { '$group': {
                     '_id': {
                         'study': '$id',
@@ -590,3 +600,20 @@ class GeoSearch:
             { '$sort': { 'signif': -1, 'enough_samples': -1, 'study_order': 1 } }
         ])
         return list(result)
+    
+    def get_descendants_of_bto_term(self, bto_id):
+        result = self.bto.aggregate([
+            { '$match': {'id': bto_id} },
+            { '$graphLookup': {
+                'from': 'bto',
+                'startWith': '$id',
+                'connectFromField': 'descendants',
+                'connectToField': 'id',
+                'as': 'kids'
+            }},
+            { '$project': {
+                '_id': 0,
+                'results': '$kids.id'
+            }}
+        ])
+        return result.next()['results']
