@@ -24,8 +24,8 @@ input[type=text] {
     padding: 12px 20px 12px 20px;
     background-color: white;
 }
-#searchbox {
-    padding: 12px 20px 12px 40px;
+.searchbox {
+    padding: 12px 20px 12px 40px !important;
     background-image: url({{ url_for('static', filename='searchicon.png') }});
     background-position: 10px 10px; 
     background-repeat: no-repeat;

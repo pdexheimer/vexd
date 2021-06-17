@@ -190,3 +190,38 @@
     margin-top: 0;
     margin-bottom: 0.5rem;
 }
+
+#filtercontainer {
+    display: flex;
+    justify-content: center;
+}
+
+#filters {
+    width: 30em;
+}
+
+#filterhelp {
+    width: 30em;
+}
+
+#helpbox {
+    border: 1px solid #333;
+    height: 10em;
+}
+
+#term-tree {
+    width: 60em;
+    height: 20em;
+    overflow: scroll;
+    resize: both;
+    margin-left: auto;
+    margin-right: auto;
+    border: 2px solid #ccc;
+}
+
+#toggletree {
+    float: right;
+    color: #0000ee;
+    text-decoration: underline;
+    cursor: pointer;
+}
