@@ -7,21 +7,21 @@ from .geo import geo
 bp = Blueprint('ui', __name__, url_prefix='/')
 
 @bp.route('/')
-def get_virus_genes():
-    return render_template('search_virus.html')
-
-@bp.route('/general.css')
-def general_css():
-    response = make_response(render_template('general.css'))
-    response.content_type = 'text/css'
-    return response
+def vexd_home():
+    return render_template('homepage.html')
 
 @bp.route('/virus')
 @use_kwargs({'q': fields.Str()}, location='query')
 @use_kwargs({'tissue': fields.Str()}, location='query')
 @use_kwargs({'descendants': fields.Bool(missing=False)}, location='query')
 def virus_results(q, tissue, descendants):
-    return render_template('combined_results.html', virus=q, search_results=geo().search_studies(q, tissue, descendants))
+    return render_template(
+        'combined_results.html', 
+        virus=q, 
+        tissue=tissue,
+        search_kids=descendants,
+        search_results=geo().search_studies(q, tissue, descendants)
+    )
 
 @bp.route('/geo/', defaults={'gse_id': None})
 @bp.route('/geo/<gse_id>')
@@ -67,3 +67,11 @@ def heatmap(q):
 @bp.route('/methods')
 def methods():
     return render_template('methods.html')
+
+@bp.route('/about')
+def about():
+    return render_template('homepage.html')
+
+@bp.route('/help')
+def help():
+    return render_template('homepage.html')

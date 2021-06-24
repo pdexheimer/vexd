@@ -201,12 +201,20 @@
 }
 
 #filterhelp {
-    width: 30em;
+    width: 20em;
 }
 
 #helpbox {
-    border: 1px solid #333;
+    border: 1px solid #ccc;
     height: 10em;
+    font-size: smaller;
+    padding: 1em;
+    overflow-y: auto;
+}
+
+#helpbox h5 {
+  margin: 0 0 0.2em 0;
+  font-size: 1rem;
 }
 
 #term-tree {

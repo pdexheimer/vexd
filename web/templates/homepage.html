@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% from "utils.html" import uber_search_head, uber_search_body %}
+{% block title %}VExD - the viral expression database{% endblock %}
+{% block head %}
+    {{ super() }}
+    {{ uber_search_head() }}
+{% endblock %}
+{% block body %}
+    {{ uber_search_body() }}
+{% endblock %}

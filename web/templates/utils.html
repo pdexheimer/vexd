@@ -18,3 +18,211 @@ target="_blank"><img src="{{ url_for('static', filename='ols.png') }}" class="ge
 &nbsp;[{{ obj.cellosaurus_name }}&nbsp;<a href="https://web.expasy.org/cellosaurus/{{ obj.cellosaurus_id }}" target="_blank"><img src="{{ url_for('static', filename='cellosaurus.jpg') }}" class="geo_icon" /></a>]
 {%- endif %}
 {%- endmacro %}
+
+{%- macro uber_search_head(virus='', term='') -%}
+<link rel="stylesheet" href="{{ url_for('static', filename='autocomplete.css') }}" />
+<link rel="stylesheet" href="{{ url_for('static', filename='jstree.style.min.css') }}" />
+<script src="{{ url_for('static', filename='autocomplete.js') }}"></script>
+<script src="{{ url_for('static', filename='ols-autocomplete.js') }}"></script>
+<script src="{{ url_for('static', filename='ols-treeview.min.js') }}"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.7.7/handlebars.min.js" integrity="sha512-RNLkV3d+aLtfcpEyFG8jRbnWHxUqVZozacROI4J2F1sTaDqo1dPQYs01OMi1t1w9Y2FdbSCDSQ2ZVdAC8bzgAg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/corejs-typeahead/1.3.1/typeahead.bundle.min.js" integrity="sha512-lEb9Vp/rkl9g2E/LdHIMFTqz21+LA79f84gqP75fbimHqVTu6483JG1AwJlWLLQ8ezTehty78fObKupq3HSHPQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.3.11/jstree.min.js" integrity="sha512-bU6dl4fd2XN3Do3aWypPP2DcKywDyR3YlyszV+rOw9OpglrGyBs6TyTsbglf9umgE+sy+dKm1UHhi07Lv+Vtfg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script>
+    window.addEventListener("load", () => init_autocomplete(
+        document.getElementById("virus_search"),
+        "{{ url_for('api.virus_typeahead', text='') }}",
+        function(result, text) {
+            var canon = result['species'];
+            output = "";
+            if (text.toUpperCase() == canon.substr(0, text.length).toUpperCase()) {
+                output += "<i><strong>"+canon.substr(0, text.length)+"</strong>";
+                output += canon.substr(text.length)+"</i>";
+            } else {
+                output += "<i>"+canon+"</i>";
+                var foundAlias = false;
+                if (text.toUpperCase() == result['name'].substr(0, text.length).toUpperCase()) {
+                    foundAlias = true;
+                    output += " (<strong>"+result['name'].substr(0, text.length)+"</strong>";
+                    output += result['name'].substr(text.length)+")";
+                }
+                if (!foundAlias) {
+                    for (var i=0; i<result['aliases'].length; i++) {
+                        var name = result['aliases'][i];
+                        if (text.toUpperCase() == name.substr(0, text.length).toUpperCase()) {
+                            foundAlias = true;
+                            output += " (<strong>"+name.substr(0, text.length)+"</strong>";
+                            output += name.substr(text.length)+")";
+                            break;
+                        }
+                    }
+                }
+            }
+            return output+"<input type='hidden' value='" + canon + "'>";
+        }
+    ));
+    window.addEventListener('load', () => {
+        toggle_link = document.getElementById("toggletree");
+        toggle_link.addEventListener("click", () => {
+            treeview = document.getElementById("term-tree");
+            if (treeview.style.display == "none") {
+                treeview.style.display = "block";
+                toggle_link.innerHTML = "Hide Tissue Tree";
+            } else {
+                treeview.style.display = "none";
+                toggle_link.innerHTML = "Show Tissue Tree";
+            }
+        });
+        virus_search = document.getElementById('virus_search');
+        virus_search.value = "{{ virus }}";
+        initHelp(virus_search);
+        initHelp(document.getElementById('kids'));
+        initHelp(document.getElementById('kidlabel'));
+        initHelp(toggle_link);
+        //tissue will be handled in jQuery
+        showHelp();
+    });
+    function initHelp(el) {
+        el.addEventListener('mouseover', () => showHelp(el));
+        el.addEventListener('mouseout', () => showHelp());
+        el.addEventListener('focus', () => showHelp());
+    }
+    function parse_iri(iri) {
+        return iri.substr(iri.lastIndexOf('/')+1).replace('_', ':');
+    }
+    $(document).ready(() => {
+        var tissue_box = $("#ols-autocomplete");
+        tissue_box.mouseover(() => showHelp(tissue_box.get(0)));
+        tissue_box.mouseout(() => showHelp());
+        tissue_box.focus(() => showHelp());
+        tissue_box.blur(() => {
+            text = tissue_box.typeahead('val');
+            cache = $("#tissue").data("bto_name");
+            if ((text == "") || (text == cache)) {
+                tissue_box.css({'border-color': ''});
+                $("input[type='submit']").prop("disabled", false);
+                if (text == "") $("#tissue").val("");
+            } else {
+                $("#tissue").val("");
+                tissue_box.css({'border-color': 'red'});
+                $("input[type='submit']").prop("disabled", true);
+            }
+        });
+        var ac_app = require("ols-autocomplete");
+        var ac_instance = new ac_app();
+        var tv_app = require("ols-treeview");
+        var tv_instance = new tv_app();
+
+        tv_options = {
+            onclick: function(params, node, relativePath, termIRI, type) {
+                $("#ols-autocomplete").typeahead('val', node.node.text);
+                $("#tissue").val(parse_iri(node.node.a_attr.iri));
+                $("#tissue").data("bto_name", node.node.text);
+                $("input[type='submit']").prop("disabled", false);
+            }
+        };
+        ac_instance.start({
+            action: function(relativePath, suggestion_ontology, type, iri, data, value) {
+                tv_instance.draw($("#term-tree"), false, "bto", "terms", iri, "https://www.ebi.ac.uk/ols/", tv_options);
+                $("#tissue").val(parse_iri(iri));
+                $("#tissue").data("bto_name", value);
+                $("input[type='submit']").prop("disabled", false);
+            }
+        });
+
+        {% if term != '' -%}
+        var iri = "http://purl.obolibrary.org/obo/{{ term|replace(':', '_') }}";
+        fetch('https://www.ebi.ac.uk/ols/api/ontologies/bto/terms/'+encodeURIComponent(encodeURIComponent(iri)))
+        .then(response => response.json())
+        .then(result => {
+            tv_instance.draw($("#term-tree"), false, "bto", "terms", iri, "https://www.ebi.ac.uk/ols/", tv_options);
+            $("#tissue").val("{{ term }}");
+            $("#tissue").data("bto_name", result.label);
+            $("#ols-autocomplete").typeahead('val', result.label);
+            $("input[type='submit']").prop("disabled", false);
+        });
+        {%- else -%}
+        tv_instance.draw($("#term-tree"), false, "bto", "terms", "", "https://www.ebi.ac.uk/ols/", tv_options);
+        {%- endif %}
+    });
+    function clearContents(el) {
+        while (el.hasChildNodes())
+            el.removeChild(el.firstChild);
+        el.innerHTML = "";
+    }
+    function showVirusHelp(el) {
+        var h5 = document.createElement("h5");
+        h5.innerHTML = "Virus name";
+        el.appendChild(h5);
+        var p = document.createElement("p");
+        p.innerHTML = "Type the name of a virus to search for.  Viruses are referenced by their species name (&quot;Human gammaherpesvirus 4&quot;), but aliases and abbreviations (&quot;EBV&quot;, &quot;HHV4&quot;) are also recognized.";
+        el.appendChild(p);
+    }
+    function showTissueHelp(el) {
+        var h5 = document.createElement("h5");
+        h5.innerHTML = "Tissue/Cell type";
+        el.appendChild(h5);
+        var p = document.createElement("p");
+        p.innerHTML = "Type the name of a tissue or cell type to search for, or leave blank to search all tissues.  Uses the Brenda Tissue Ontology (BTO) terms.  To browse the ontology, click &quot;Show Tissue Tree&quot;.";
+        el.appendChild(p);
+        p = document.createElement("p");
+        p.innerHTML = "Cell lines are referenced by their type as opposed to a specific cell line reference (ie, HeLa cells are &quot;cervical adenocarcinoma cell line&quot; as opposed to the more specific &quot;HeLa cell&quot;).";
+        el.appendChild(p);
+    }
+    function showTissueChildrenHelp(el) {
+        var h5 = document.createElement("h5");
+        h5.innerHTML = "Include more specific tissues?";
+        el.appendChild(h5);
+        var p = document.createElement("p");
+        p.innerHTML = "Select this box to include more specific tissue/cell types in the search.  For instance, searching for &quot;blood&quot; with this box checked will also search for &quot;leukocyte&quot;, &quot;erythrocyte&quot;, etc.  With the box unchecked, only the specific term &quot;blood&quot; will be included in the search.";
+        el.appendChild(p);
+    }
+    function showTreeHelp(el) {
+        var h5 = document.createElement("h5");
+        h5.innerHTML = "Show/Hide Tissue Tree";
+        el.appendChild(h5);
+        var p = document.createElement("p");
+        p.innerHTML = "Toggles whether the complete BTO tissue hierarchy is displayed.  Useful for browsing or for finding the exact name of a term.  Terms can be selected in the tree or in the text box.";
+        el.appendChild(p);
+    }
+    function showHelp(forElement=document.activeElement) {
+        helpBox = document.getElementById('helpbox');
+        clearContents(helpBox);
+        switch (forElement.id) {
+            case 'virus_search': showVirusHelp(helpBox); break;
+            case 'ols-autocomplete': showTissueHelp(helpBox); break;
+            case 'kids': 
+            case 'kidlabel': showTissueChildrenHelp(helpBox); break;
+            case 'toggletree': showTreeHelp(helpBox); break;
+            default: helpBox.innerHTML = "Mouse over or select an input field for help.";
+        }
+    }
+</script>
+{%- endmacro -%}
+
+{%- macro uber_search_body(search_kids=True) -%}
+<form autocomplete="off" action="{{ url_for('ui.virus_results') }}" method="GET">
+    <input type="hidden" name="tissue" id="tissue" />
+    <div id="filtercontainer">
+        <div id="filters">
+            <h3>Select analyses</h3>
+            <div class="autocomplete">
+                <input type="text" class="searchbox" id="virus_search" 
+                size="40" name="q" placeholder="Virus name" autofocus/>
+            </div><br>
+            <input type="text" size="40" placeholder="Tissue/Cell type" data-olswidget="select" 
+            data-olsontology="bto" data-selectpath="https://www.ebi.ac.uk/ols/" id="ols-autocomplete"
+            style="font-weight: normal" class="searchbox" /><br>
+            <input type="checkbox" name="descendants" id="kids" value="1" {{ "checked" if search_kids }} />
+            <label for="kids" id="kidlabel">Include more specific tissues?</label><br />
+            <input type="submit" value="Search" />                        
+        </div>
+        <div id="filterhelp">
+            <div id="helpbox"></div>
+            <span id="toggletree">Show Tissue Tree</span>
+        </div>
+    </div>
+    <div id="term-tree" style="display: none"></div>
+</form>
+{%- endmacro -%}

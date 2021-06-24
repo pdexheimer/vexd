@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "utils.html" import cell_type %}
+{% from "utils.html" import cell_type, uber_search_head, uber_search_body %}
 {% block title %}Results{% endblock %}
 {% macro filtered_count(total, pf, reasons) -%}
 {% if total == pf %}{{ pf }}{% else -%}
@@ -12,6 +12,7 @@
 {%- endmacro %}
 {% block head %}
     {{ super() }}
+    {{ uber_search_head(virus, tissue) }}
     <style>
         .tooltip {
             position: relative;
@@ -47,6 +48,11 @@
     </style>
 {% endblock %}
 {% block body %}
+{{ uber_search_body(search_kids) }}
+{% if search_results|length == 0 -%}
+<h1>No Results</h1>
+{%- else -%}
+<h1>{{ search_results|length }} Result{{ "s" if search_results|length > 1 }}</h1>
 <table class="gse_list" style="max-width: 65em">
     <thead>
         <tr>
@@ -74,5 +80,6 @@
     {% endfor %}
     </tbody>
 </table>
+{%- endif %}
 
 {% endblock %}

@@ -14,7 +14,7 @@ function init_autocomplete(inp, lookahead_url, lookahead_parse_fn) {
         listDiv.setAttribute("id", this.id+"-ac-list");
         listDiv.setAttribute("class", "autocomplete-items");
         this.parentNode.appendChild(listDiv);
-        fetch(lookahead_url+"/"+encodeURIComponent(val))
+        fetch(lookahead_url+encodeURIComponent(val))
         .then(response => response.json())
         .then(result => {
             for (var i=0; i<result.length; i++) {
