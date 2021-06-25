@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% from "utils.html" import cell_type, uber_search_head, uber_search_body %}
 {% block title %}Results{% endblock %}
-{% macro filtered_count(total, pf, reasons) -%}
+{%- macro filtered_count(total, pf, reasons) -%}
 {% if total == pf %}{{ pf }}{% else -%}
 {% set line_break=joiner("<br>"|safe) %}
 <span style="text-decoration-line: line-through">{{ total }}</span> {{ pf }}
@@ -9,7 +9,13 @@
     <span class="tooltiptext">{% for el in reasons if el._id is not none %}{{ line_break() }}{{ el._id }}: {{ el.count }}{% endfor %}</span>
 </span>
 {%- endif %}
-{%- endmacro %}
+{%- endmacro -%}
+{%- macro result_link(count, geneSet, result) -%}
+{%- if count > 0 -%}
+<a href="{{ url_for('ui.download_results', study=result.study, virus=result.virus, cell_type=result.bto_name, platform=result.platform, geneSet=geneSet) }}" target="_blank">
+{%- endif -%}
+{{ count }}{{ "</a>"|safe if count > 0 }}
+{%- endmacro -%}
 {% block head %}
     {{ super() }}
     {{ uber_search_head(virus, tissue) }}
@@ -53,17 +59,19 @@
 <h1>No Results</h1>
 {%- else -%}
 <h1>{{ search_results|length }} Result{{ "s" if search_results|length > 1 }}</h1>
-<table class="gse_list" style="max-width: 65em">
+<a href="{{ url_for('ui.virus_results_as_text', q=virus, tissue=tissue, descendants=search_kids) }}" target="_blank">Download table as text</a><br><br>
+<table class="gse_list">
     <thead>
         <tr>
             <th>Study</th>
             <th>Title</th>
             <th>Analyzed Samples</th>
             <th>Significant Genes</th>
+            <th></th>
         </tr>
     </thead>
     <tbody>
-    {% for result in search_results %}
+    {% for result in search_results %}{% set valid_comp = result.pf_samples|length >= 2 and result.pf_controls|length >= 2 %}
         <tr>
             <td><span class="geo_id"><a href="{{ url_for('ui.display_geo_entry', gse_id=result.study) }}">{{ result.study }}</a></span><br>
             <i>{{ result.virus }}</i><br>
@@ -72,10 +80,14 @@
             <td style="max-width: 30%; width: 30%">{{ result.title }}</td>
             <td>Virus: {{ filtered_count(result.samples|length, result.pf_samples|length, result.missing_sample_reasons) }}<br>
             Control: {{ filtered_count(result.controls|length, result.pf_controls|length, result.missing_control_reasons) }}</td>
-            <td><span class="geo_id">{% if result.pf_samples|length < 2 or result.pf_controls|length < 2 %}--{% else -%}
-            {{ result.signif|default(0) }}{% endif %}</span>{% if result.signif|default(0) > 0 -%}
-            &nbsp;({{ result.up|default(0) }}&nbsp;&#x2191; / {{ result.down|default(0) }}&nbsp;&#x2193;)
+            <td><span class="geo_id">{% if valid_comp -%}
+                {{ result_link(result.signif|default(0), 'sig', result) }}
+            {%- else %}--{% endif %}</span>
+            {%- if result.signif|default(0) > 0 -%}
+                &nbsp;({{ result_link(result.up|default(0), 'up', result) }}&nbsp;&#x2191; / 
+                {{ result_link(result.down|default(0), 'down', result) }}&nbsp;&#x2193;)
             {%- endif %}</td>
+            <td><a href="{{ url_for('ui.download_results', study=result.study, virus=result.virus, cell_type=result.bto_name, platform=result.platform, geneSet='all') }}" target="_blank">Full Results</a></td>
         </tr>
     {% endfor %}
     </tbody>

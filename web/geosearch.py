@@ -617,3 +617,38 @@ class GeoSearch:
             }}
         ])
         return result.next()['results']
+
+    def get_analysis_results(self, study, virus, cell_type, platform, geneSet):
+        initial_match = {
+            'study': study,
+            'virus': virus,
+            'bto_name': cell_type,
+            'platform': platform
+        }
+        if geneSet != 'all':
+            initial_match['adj_p'] = {'$lte': 0.05}
+        if geneSet == 'sig':
+            initial_match['$or'] = [
+                {'logfc': {'$gte': 1}},
+                {'logfc': {'$lte': -1}}
+            ]
+        elif geneSet == 'up':
+            initial_match['logfc'] = {'$gte': 1}
+        elif geneSet == 'down':
+            initial_match['logfc'] = {'$lte': -1}
+        result = self.results.aggregate([
+            { '$match': initial_match },
+            { '$lookup': {
+                'from': 'genes',
+                'localField': 'ensembl_id',
+                'foreignField': 'ensembl_id',
+                'as': 'symbol'
+            }},
+            { '$set': { 'symbol': {'$mergeObjects': [
+                { 'symbol': '' },
+                { '$arrayElemAt': ['$symbol', 0] }
+            ]}}},
+            { '$set': { 'symbol': '$symbol.symbol' } },
+            { '$project': { '_id': 0 } }
+        ])
+        return list(result)

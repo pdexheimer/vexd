@@ -1,6 +1,6 @@
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, jsonify
 from flask.helpers import make_response
-from webargs import fields
+from webargs import fields, validate
 from webargs.flaskparser import use_kwargs
 from .geo import geo
 
@@ -23,6 +23,21 @@ def virus_results(q, tissue, descendants):
         search_results=geo().search_studies(q, tissue, descendants)
     )
 
+@bp.route('/virus/txt')
+@use_kwargs({'q': fields.Str()}, location='query')
+@use_kwargs({'tissue': fields.Str()}, location='query')
+@use_kwargs({'descendants': fields.Bool(missing=False)}, location='query')
+def virus_results_as_text(q, tissue, descendants):
+    response = make_response(render_template(
+        'combined_results.txt', 
+        virus=q, 
+        tissue=tissue,
+        search_kids=descendants,
+        search_results=geo().search_studies(q, tissue, descendants)
+    ))
+    response.content_type = 'text/plain'
+    return response
+
 @bp.route('/geo/', defaults={'gse_id': None})
 @bp.route('/geo/<gse_id>')
 @use_kwargs({'gse_id': fields.Str()}, location='query')
@@ -34,26 +49,37 @@ def display_geo_entry(gse_id):
 def display_gene_info(q):
     return render_template('gene.html', gene=geo().get_gene_info(q), gene_results=geo().get_results_by_gene(q))
 
-@bp.route('/geo_lookup')
-def geo_lookup():
-    return render_template('geo_search.html')
+# @bp.route('/geo_lookup')
+# def geo_lookup():
+#     return render_template('geo_search.html')
 
 @bp.route('/gene_lookup')
 def gene_search():
     return render_template('gene_search.html')
 
-@bp.route('/geo_search')
-def geo_search():
-    return render_template('uber_search.html')
+result_args = {
+    'virus': fields.Str(),
+    'study': fields.Str(),
+    'platform': fields.Str(),
+    'cell_type': fields.Str()
+}
+@bp.route('/results/<geneSet>')
+@use_kwargs({'geneSet': fields.Str(validate=validate.OneOf(['all','sig','up','down']))}, location='view_args')
+@use_kwargs(result_args, location='query')
+def download_results(virus, study, platform, cell_type, geneSet):
+    response = make_response(render_template('results.txt', 
+        results=geo().get_analysis_results(study, virus, cell_type, platform, geneSet)))
+    response.content_type = 'text/plain'
+    return response
 
-@bp.route('/search')
-@use_kwargs({'q': fields.Str()}, location='query')
-def search_results(q):
-    return render_template('search_results.html', gse_list=geo().search_gse(virus_name=q))
+# @bp.route('/search')
+# @use_kwargs({'q': fields.Str()}, location='query')
+# def search_results(q):
+#     return render_template('search_results.html', gse_list=geo().search_gse(virus_name=q))
 
-@bp.route('/statistics')
-def statistics():
-    return render_template('stats.html', virus_counts=geo().count_by_virus())
+# @bp.route('/statistics')
+# def statistics():
+#     return render_template('stats.html', virus_counts=geo().count_by_virus())
 
 @bp.route('/heatmap')
 @use_kwargs({'q': fields.Str()}, location='query')

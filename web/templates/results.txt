@@ -1,0 +1,10 @@
+#study={{ results[0].study }}
+#virus={{ results[0].virus }}
+#cell type={{ results[0].bto_name }} ({{ results[0].bto_id}})
+{%- if results[0].cellosaurus_id %} -- {{ results[0].cellosaurus_name }} ({{ results[0].cellosaurus_id }}){% endif %}
+#platform={{ results[0].platform|default('RNA-Seq') }}
+{% set show_ps = results[0].probeset_id is defined -%}
+{{ ((['probeset'] if show_ps else []) + ['Ensembl ID', 'Gene Symbol', 'Uninfected mean', 'Uninfected SD', 'Uninfected count', 'Infected mean', 'Infected SD', 'Infected count', 'log FC', 'fold change', 'raw p-val', 'adjusted p-val'])|join('\t') }}
+{%- for gene in results %}
+{{ (([gene.probeset_id] if show_ps else []) + [gene.ensembl_id, gene.symbol, gene.control_mean, gene.control_stdev, gene.control_count, gene.infect_mean, gene.infect_stdev, gene.infect_count, gene.logfc, gene.fc, gene.raw_p, gene.adj_p])|join('\t') }}
+{%- endfor %}

@@ -1,0 +1,6 @@
+#virus={{ virus|default('All', true) }}
+#cell type={{ tissue|default('All', true) }} {{ "(plus more specific tissues)" if search_kids }}
+{{ ['Study', 'Virus', 'Tissue', 'Tissue ID', 'Cell Line', 'Cell Line ID', 'Platform', 'Study Title', 'Virus Samples', 'Usable Virus Samples', 'Control Samples', 'Usable Control Samples', 'Significant Genes', 'Up', 'Down']|join('\t') }}
+{%- for row in search_results %}{% set valid_comp = row.pf_samples|length >= 2 and row.pf_controls|length >= 2 %}
+{{ ([row.study, row.virus, row.bto_name, row.bto_id, row.cellosaurus_name|default('', true), row.cellosaurus_id|default('', true), row.platform|default('RNA-Seq'), row.title, row.samples|length, row.pf_samples|length, row.controls|length, row.pf_controls|length] + ([row.signif|default(0), row.up|default(0), row.down|default(0)] if valid_comp else ['--', '--', '--']))|join('\t')}}
+{%- endfor %}
