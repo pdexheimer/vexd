@@ -48,10 +48,10 @@ td,th {
     font-style: italic;
 }
 
-.gse_list tr:nth-child(even) {
+.gse_list tbody tr:nth-child(even) {
     background-color: gainsboro;
 }
-.gse_list tr:nth-child(odd) {
+.gse_list tbody tr:nth-child(odd) {
     background-color: mintcream;
 }
 .gse_list td,th {

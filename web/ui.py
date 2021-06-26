@@ -49,6 +49,17 @@ def display_geo_entry(gse_id):
 def display_gene_info(q):
     return render_template('gene.html', gene=geo().get_gene_info(q), gene_results=geo().get_results_by_gene(q))
 
+@bp.route('/gene/txt')
+@use_kwargs({'q': fields.Str()}, location='query')
+def gene_info_text(q):
+    response = make_response(render_template(
+        'gene_results.txt', 
+        gene=geo().get_gene_info(q), 
+        gene_results=geo().get_results_by_gene(q)
+    ))
+    response.content_type = 'text/plain'
+    return response
+
 # @bp.route('/geo_lookup')
 # def geo_lookup():
 #     return render_template('geo_search.html')

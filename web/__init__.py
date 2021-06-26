@@ -1,6 +1,7 @@
 import os
 
 from flask import Flask
+from markupsafe import Markup
 
 from . import api, geo, ui
 
@@ -49,6 +50,11 @@ def create_app(test_config=None):
     def get_sample_category(sample):
         key = 'normalized_virus' if sample['valid_experiment'] else 'invalid_reason'
         return sample[key]
+    
+    @app.template_filter()
+    def highlight(value, is_signif):
+        template = Markup("<b>{}</b>") if is_signif else "{}"
+        return template.format(value)
     
     @app.template_test('virus_class_is')
     def sample_category_equals(sample, value):

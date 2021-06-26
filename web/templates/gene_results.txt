@@ -1,0 +1,6 @@
+#gene symbol={{ gene.symbol }}
+#Ensembl ID={{ gene.ensembl_id }}
+{{ (['Study', 'Virus', 'Tissue', 'Tissue ID', 'Cell Line', 'Cell Line ID', 'Platform', 'Uninfected mean', 'Uninfected SD', 'Uninfected count', 'Infected mean', 'Infected SD', 'Infected count', 'log FC', 'fold change', 'raw p-val', 'adjusted p-val'])|join('\t') }}
+{%- for row in gene_results %}
+{{ ([row.study, row.virus, row.bto_name, row.bto_id, row.cellosaurus_name|default('', true), row.cellosaurus_id|default('', true), row.platform|default('RNA-Seq'), row.control_mean, row.control_stdev, row.control_count, row.infect_mean, row.infect_stdev, row.infect_count, row.logfc, row.fc, row.raw_p, row.adj_p])|join('\t') }}
+{%- endfor %}

@@ -58,7 +58,7 @@
 {% if search_results|length == 0 -%}
 <h1>No Results</h1>
 {%- else -%}
-<h1>{{ search_results|length }} Result{{ "s" if search_results|length > 1 }}</h1>
+<h1>{{ search_results|length }} {{ "Result"|pluralize(search_results|length) }}</h1>
 <a href="{{ url_for('ui.virus_results_as_text', q=virus, tissue=tissue, descendants=search_kids) }}" target="_blank">Download table as text</a><br><br>
 <table class="gse_list">
     <thead>

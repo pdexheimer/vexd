@@ -1,23 +1,29 @@
 {% extends "base.html" %}
-{% from "utils.html" import cell_type %}
+{% from "utils.html" import cell_type, gene_search_head, gene_search_body %}
 {% block title %}Gene Results{% endblock %}
+{% block head %}
+{{ super() }}
+{{ gene_search_head(false, gene.ensembl_id) }}
+{% endblock %}
 {% block body %}
+<div style="float: right; margin-right: 1.5em">
+    {{ gene_search_body(false) }}
+</div>
 <h1>{{ gene.symbol }}</h1>
 <h2>{{ gene.description|default("No Description") }}</h2>
 <p><b>Ensembl ID:</b> <a href="https://ensembl.org/Homo_sapiens/Gene/Summary?db=core;g={{ gene.ensembl_id }}">{{ gene.ensembl_id }}</a></p>
 <p><b>Refseq:</b> {% set commify=joiner(", ") %}{% for refseq in gene.refseq %}{{ commify() }}<a href="https://www.ncbi.nlm.nih.gov/nucleotide/{{ refseq }}">{{ refseq }}</a>{% else %}<i>None listed</i>{% endfor %}</p>
 <p><b>Entrez ID:</b> {% set commify=joiner(", ") %}{% for entrez in gene.entrez %}{{ commify() }}<a href="https://www.ncbi.nlm.nih.gov/gene/{{ entrez }}">{{ entrez }}</a>{% else %}<i>None listed</i>{% endfor %}</p>
 <p><b>Aliases:</b> {% set commify=joiner(", ") %}{% for alias in gene.alias %}{{ commify() }} {{ alias }}{% else %}<i>None listed</i>{% endfor %}</p>
-<h3>{{ gene_results|length }} {{ "Result"|pluralize(gene_results|length) }}</h3>
-<table>
+<p><a href="{{ url_for('ui.gene_info_text', q=gene.ensembl_id) }}" target="_blank">Download table as text</a></p>
+<table class="gse_list">
     <thead>
         <tr>
             <th>Study</th>
             <th>Virus</th>
             <th>Cell Type</th>
-            <th>Control Mean</th>
-            <th>Infected Mean</th>
-            <th>log Fold Change</th>
+            <th># Infect/Ctrl</th>
+            <th>Fold Change</th>
             <th>Adjusted p-value</th>
         </tr>
     </thead>
@@ -27,10 +33,10 @@
             <td><a href="{{ url_for('ui.display_geo_entry', gse_id=result.study) }}">{{ result.study }}</a></td>
             <td><i>{{ result.virus }}</i></td>
             <td>{{ cell_type(result) }}</td>
-            <td>{{ result.control_mean|round(3) }}</td>
-            <td>{{ result.infect_mean|round(3) }}</td>
-            <td>{{ result.logfc|round(3) }}</td>
-            <td>{{ '{:.4g}'.format(result.adj_p) }}</td>
+            <td>{{ result.infect_count }} / {{ result.control_count }}</td>
+            <td>{{ (result.fc if result.logfc > 0 else 1.0/result.fc)|round(3)|highlight(result.logfc >= 1 or result.logfc <= -1) }}
+            &nbsp;{{ "&#x2191;"|safe if result.logfc > 0 else "&#x2193;"|safe }}</td>
+            <td>{{ '{:.4g}'.format(result.adj_p)|highlight(result.adj_p <= 0.05) }}</td>
         </tr>
         {% endfor %}
     </tbody>

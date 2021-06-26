@@ -226,3 +226,111 @@ target="_blank"><img src="{{ url_for('static', filename='ols.png') }}" class="ge
     <div id="term-tree" style="display: none"></div>
 </form>
 {%- endmacro -%}
+
+{%- macro gene_search_head(show_help=true, gene_id='') -%}
+<link rel="stylesheet" href="{{ url_for('static', filename='autocomplete.css') }}" />
+<script src="{{ url_for('static', filename='autocomplete.js') }}"></script>
+<script>
+    window.addEventListener("load", () => init_autocomplete(
+        document.getElementById("gene_search"),
+        "{{ url_for('api.gene_typeahead', text='') }}",
+        function(result, text) {
+            var symbol = result['symbol'];
+            output = "";
+            if (text.toUpperCase() == symbol.substr(0, text.length).toUpperCase()) {
+                output += "<strong>"+symbol.substr(0, text.length)+"</strong>";
+                output += symbol.substr(text.length);
+            } else {
+                output += symbol;
+                var foundAlias = false;
+                if (text.toUpperCase() == result['ensembl_id'].substr(0, text.length).toUpperCase()) {
+                    foundAlias = true;
+                    output += " (<strong>"+result['ensembl_id'].substr(0, text.length)+"</strong>";
+                    output += result['ensembl_id'].substr(text.length)+")";
+                }
+                if (!foundAlias) {
+                    for (var i=0; i<result['alias'].length; i++) {
+                        var name = result['alias'][i];
+                        if (text.toUpperCase() == name.substr(0, text.length).toUpperCase()) {
+                            foundAlias = true;
+                            output += " (<strong>"+name.substr(0, text.length)+"</strong>";
+                            output += name.substr(text.length)+")";
+                            break;
+                        }
+                    }
+                }
+                if (!foundAlias) {
+                    for (var i=0; i<result['refseq'].length; i++) {
+                        var name = result['refseq'][i];
+                        if (text.toUpperCase() == name.substr(0, text.length).toUpperCase()) {
+                            foundAlias = true;
+                            output += " (<strong>"+name.substr(0, text.length)+"</strong>";
+                            output += name.substr(text.length)+")";
+                            break;
+                        }
+                    }
+                }
+            }
+            return output+"<input type='hidden' value='" + result['ensembl_id'] + "'>";
+        }
+    ));
+    {%- if gene_id %}
+    window.addEventListener('load', () => {
+        document.getElementById('gene_search').value = "{{ gene_id }}";
+    });
+    {%- endif %}
+    {%- if show_help %}
+    window.addEventListener('load', () => {
+        initHelp(document.getElementById('gene_search'));
+        showHelp();
+    });
+    function initHelp(el) {
+        el.addEventListener('mouseover', () => showHelp(el));
+        el.addEventListener('mouseout', () => showHelp());
+        el.addEventListener('focus', () => showHelp());
+    }
+    function clearContents(el) {
+        while (el.hasChildNodes())
+            el.removeChild(el.firstChild);
+        el.innerHTML = "";
+    }
+    function showGeneHelp(el) {
+        var h5 = document.createElement("h5");
+        h5.innerHTML = "Gene Symbol/ID";
+        el.appendChild(h5);
+        var p = document.createElement("p");
+        p.innerHTML = "Enter a gene symbol (&quot;ISG15&quot;), alias (&quot;UCRP&quot;), or Ensembl Gene ID (&quot;ENSG00000187608&quot;).";
+        el.appendChild(p);
+    }
+    function showHelp(forElement=document.activeElement) {
+        helpBox = document.getElementById('helpbox');
+        clearContents(helpBox);
+        switch (forElement.id) {
+            case 'gene_search': showGeneHelp(helpBox); break;
+            default: helpBox.innerHTML = "Mouse over or select an input field for help.";
+        }
+    }
+    {%- endif %}
+</script>
+{%- endmacro -%}
+
+{%- macro gene_search_body(show_help=true) -%}
+<form autocomplete="off" action="{{ url_for('ui.display_gene_info') }}" method="GET">
+    <div id="filtercontainer">
+        <div id="filters">
+            <h3>Search for gene</h3>
+            <div class="autocomplete">
+                <input type="text" id="gene_search" class="searchbox" 
+                size="40" name="q" placeholder="Gene symbol/ID" autofocus/>
+            </div><br>
+            <br>
+            <input type="submit" value="Search" />
+        </div>
+        {%- if show_help %}
+        <div id="filterhelp">
+            <div id="helpbox"></div>
+        </div>
+        {%- endif %}
+    </div>
+</form>
+{%- endmacro -%}
