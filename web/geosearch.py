@@ -445,11 +445,9 @@ class GeoSearch:
                         'virus': '$samples.normalized_virus',
                         'platform': '$samples.cdf',
                         'bto_id': '$samples.bto_id',
-                        'cellosaurus_name': '$samples.cellosaurus_name',
-                        'cellosaurus_id': '$samples.cellosaurus_id',
-                        'cell_type': '$samples.cell_type'
                     },
-                    'samples': { '$push': '$samples' }
+                    'samples': { '$push': '$samples' },
+                    'cell_type': { '$first': '$samples.cell_type' }
                 } },
             { '$lookup': {
                     'from': 'geo',
@@ -586,6 +584,7 @@ class GeoSearch:
                             'controls': '$controls',
                             'missing_sample_reasons': '$missing_sample_reasons',
                             'missing_control_reasons': '$missing_control_reasons',
+                            'cell_type': '$cell_type'
                 } ] } }},
             { '$set': {
                     'enough_samples': { '$and': [
@@ -623,8 +622,9 @@ class GeoSearch:
             'study': study,
             'virus': virus,
             'bto_name': cell_type,
-            'platform': platform
         }
+        if platform:
+            initial_match['platform'] = platform
         if geneSet != 'all':
             initial_match['adj_p'] = {'$lte': 0.05}
         if geneSet == 'sig':

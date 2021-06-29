@@ -38,8 +38,10 @@
                 {%- elif 'missing_reason' in sample -%}
                     <span class="invalid">Data failed QC</span>
                     {%- if sample.missing_reason == "Sample failed QC" -%}
-                        {%- if sample.pm_mean < 65 %}<br><code>pm_mean</code> is {{ sample.pm_mean }} (low signal, below threshold of 60){% endif -%}
-                        {%- if sample.all_probeset_mad_residual_mean > 0.8 %}<br><code>all_probeset_mad_residual_mean</code> is {{ sample.all_probeset_mad_residual_mean }} (poor normalization, above threshold of 0.80){% endif -%}
+                        {%- if sample.pm_mean is defined and sample.pm_mean < 65 %}<br><code>pm_mean</code> is {{ sample.pm_mean }} (low signal, below threshold of 60){% endif -%}
+                        {%- if sample.all_probeset_mad_residual_mean is defined and sample.all_probeset_mad_residual_mean > 0.8 %}<br><code>all_probeset_mad_residual_mean</code> is {{ sample.all_probeset_mad_residual_mean }} (poor normalization, above threshold of 0.80){% endif -%}
+                        {%- if sample.pseudoaligned_reads is defined and sample.pseudoaligned_reads < 1500000 %}<br><code>pseudoaligned_reads</code> is {{ sample.pseudoaligned_reads }} (low number of usable reads){% endif -%}
+                        {%- if sample.pct_pseudoaligned is defined and sample.pct_pseudoaligned < 18 %}<br><code>pct_pseudoaligned</code> is {{ sample.pct_pseudoaligned }}% (low fraction of usable reads){% endif -%}
                     {%- elif sample.missing_reason == "Study failed QC" -%}
                         <br>At least 40% of samples in study failed QC
                     {%- else %}<br>{{ sample.missing_reason }}

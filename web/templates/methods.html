@@ -14,11 +14,11 @@
 <p><code>kallisto quant -i &lt;kallisto index&gt; --single --bias -l 300 -s 30 -o &lt;output directory&gt; &lt;FASTQ files&gt;</code></p>
 <p>For Paired-End libraries:</p>
 <p><code>kallisto quant -i &lt;kallisto index&gt; --bias -o &lt;output directory&gt; &lt;FASTQ files&gt;</code></p>
-<p>TBD: Which measure (TPM or counts) will be used/presented?</p>
+<p>Transcripts per Million (TPM) quantities were used for differential expression.  Note that these units are linear, unlike the log2 values used for microarrays.</p>
 <h2>Quality Control</h2>
 <p><b>Microarrays</b> were removed if they had either <code>mad_residual_mean &gt; 0.80</code> OR <code>pm_mean &lt; 65</code>.  The first metric quantifies the error in the RMA model applied to the probeset, while the second is an indicator of the overall &quot;brightness&quot; of the array.  These metrics removed ~3% of eligible samples.</p>
-<p><b>RNA-seq</b> samples: TBD</p>
+<p><b>RNA-seq</b> samples were removed if they had either a low absolute number of usable reads (pseudo-aligned reads &lt; 1.5 million) or a low fraction of reads that could be pseudo-aligned (&lt; 18% of total reads).</p>
 <p>If 40% or more of the samples from a study were unavailable - either because they failed QC or the raw data was not available - the study was removed.</p>
 <h2>Differential Analyses</h2>
-<p>All differential analyses used a two-sided Welch's T-test (unequal variance) with Benjamini-Hochberg correction. Comparisons were performed within a single study, cell type, and platform, and were only performed when at least three samples were present for both the infected and uninfected condition.</p>
+<p>All differential analyses used a two-sided Welch's T-test (unequal variance) with Benjamini-Hochberg correction. Comparisons were performed within a single study, cell type, and platform, and were only performed when at least two samples were present for both the infected and uninfected condition.</p>
 {% endblock %}
