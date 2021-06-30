@@ -156,7 +156,7 @@ target="_blank"><img src="{{ url_for('static', filename='ols.png') }}" class="ge
         h5.innerHTML = "Virus name";
         el.appendChild(h5);
         var p = document.createElement("p");
-        p.innerHTML = "Type the name of a virus to search for.  Viruses are referenced by their species name (&quot;Human gammaherpesvirus 4&quot;), but aliases and abbreviations (&quot;EBV&quot;, &quot;HHV4&quot;) are also recognized.";
+        p.innerHTML = "Type the name of a virus or leave blank to search all viruses.  Viruses are referenced by their species name (&quot;Human gammaherpesvirus 4&quot;), but aliases and abbreviations (&quot;EBV&quot;, &quot;HHV4&quot;) are also recognized.";
         el.appendChild(p);
     }
     function showTissueHelp(el) {
@@ -164,10 +164,10 @@ target="_blank"><img src="{{ url_for('static', filename='ols.png') }}" class="ge
         h5.innerHTML = "Tissue/Cell type";
         el.appendChild(h5);
         var p = document.createElement("p");
-        p.innerHTML = "Type the name of a tissue or cell type to search for, or leave blank to search all tissues.  Uses the Brenda Tissue Ontology (BTO) terms.  To browse the ontology, click &quot;Show Tissue Tree&quot;.";
+        p.innerHTML = "Type the name of a tissue or cell type or leave blank to search all tissues.  VExD uses Brenda Tissue Ontology (BTO) terms.";
         el.appendChild(p);
         p = document.createElement("p");
-        p.innerHTML = "Cell lines are referenced by their type as opposed to a specific cell line reference (ie, HeLa cells are &quot;cervical adenocarcinoma cell line&quot; as opposed to the more specific &quot;HeLa cell&quot;).";
+        p.innerHTML = "Cell lines are referenced by their broad type instead of a specific name (&quot;cervical adenocarcinoma cell line&quot; for HeLa cells). To browse the ontology for cell lines and tissues, click &quot;Show Tissue Tree&quot;.";
         el.appendChild(p);
     }
     function showTissueChildrenHelp(el) {

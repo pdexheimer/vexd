@@ -11,11 +11,11 @@
 </div>
 <h1>{{ gene.symbol }}</h1>
 <h2>{{ gene.description|default("No Description") }}</h2>
-<p><b>Ensembl ID:</b> <a href="https://ensembl.org/Homo_sapiens/Gene/Summary?db=core;g={{ gene.ensembl_id }}">{{ gene.ensembl_id }}</a></p>
-<p><b>Refseq:</b> {% set commify=joiner(", ") %}{% for refseq in gene.refseq %}{{ commify() }}<a href="https://www.ncbi.nlm.nih.gov/nucleotide/{{ refseq }}">{{ refseq }}</a>{% else %}<i>None listed</i>{% endfor %}</p>
-<p><b>Entrez ID:</b> {% set commify=joiner(", ") %}{% for entrez in gene.entrez %}{{ commify() }}<a href="https://www.ncbi.nlm.nih.gov/gene/{{ entrez }}">{{ entrez }}</a>{% else %}<i>None listed</i>{% endfor %}</p>
+<p><b>Ensembl ID:</b> <a href="https://ensembl.org/Homo_sapiens/Gene/Summary?db=core;g={{ gene.ensembl_id }}" target="_blank">{{ gene.ensembl_id }}</a></p>
+<p><b>Refseq:</b> {% set commify=joiner(", ") %}{% for refseq in gene.refseq %}{{ commify() }}<a href="https://www.ncbi.nlm.nih.gov/nucleotide/{{ refseq }}" target="_blank">{{ refseq }}</a>{% else %}<i>None listed</i>{% endfor %}</p>
+<p><b>Entrez ID:</b> {% set commify=joiner(", ") %}{% for entrez in gene.entrez %}{{ commify() }}<a href="https://www.ncbi.nlm.nih.gov/gene/{{ entrez }}" target="_blank">{{ entrez }}</a>{% else %}<i>None listed</i>{% endfor %}</p>
 <p><b>Aliases:</b> {% set commify=joiner(", ") %}{% for alias in gene.alias %}{{ commify() }} {{ alias }}{% else %}<i>None listed</i>{% endfor %}</p>
-<p><a href="{{ url_for('ui.gene_info_text', q=gene.ensembl_id) }}" target="_blank">Download table as text</a></p>
+<p><a href="{{ url_for('ui.gene_info_text', q=gene.ensembl_id) }}">Download table as text</a></p>
 <table class="gse_list">
     <thead>
         <tr>

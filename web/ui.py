@@ -35,6 +35,7 @@ def virus_results_as_text(q, tissue, descendants):
         search_kids=descendants,
         search_results=geo().search_studies(q, tissue, descendants)
     ))
+    response.headers.set('Content-disposition', 'attachment', filename="studies.txt")
     response.content_type = 'text/plain'
     return response
 
@@ -52,11 +53,13 @@ def display_gene_info(q):
 @bp.route('/gene/txt')
 @use_kwargs({'q': fields.Str()}, location='query')
 def gene_info_text(q):
+    gene_info = geo().get_gene_info(q)
     response = make_response(render_template(
         'gene_results.txt', 
-        gene=geo().get_gene_info(q), 
+        gene=gene_info, 
         gene_results=geo().get_results_by_gene(q)
     ))
+    response.headers.set('Content-disposition', 'attachment', filename=f"{gene_info['symbol']}_results.txt")
     response.content_type = 'text/plain'
     return response
 
@@ -80,6 +83,7 @@ result_args = {
 def download_results(virus, study, platform, cell_type, geneSet):
     response = make_response(render_template('results.txt', 
         results=geo().get_analysis_results(study, virus, cell_type, platform, geneSet)))
+    response.headers.set('Content-disposition', 'attachment', filename="results.txt")
     response.content_type = 'text/plain'
     return response
 
