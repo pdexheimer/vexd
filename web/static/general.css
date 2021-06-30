@@ -1,3 +1,31 @@
+body {
+    background-color: #f7fff9;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+}
+
+header img {
+    height: 6.5em;
+}
+
+header h1 {
+    color: #333;
+    margin: 0.8em 0;
+}
+
+header * {
+    display: inline-block;
+    font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+}
+
+#cchmc {
+    float: right;
+    background-color: white;
+}
+
 nav {
     overflow: hidden;
     background-color: #e9e9e9;
@@ -18,6 +46,14 @@ nav a:hover {
 nav a:last-of-type {
     float: right;
 }
+
+footer {
+    margin-top: 2em;
+    border-top: 1px dashed #e9e9e9;
+    font-size: 80%;
+    text-align: center;
+}
+
 input[type=text] {
     box-sizing: border-box;
     /*width: 100%;*/
@@ -25,7 +61,7 @@ input[type=text] {
     border-radius: 4px;
     font-size: 16px;
     padding: 12px 20px 12px 20px;
-    background-color: white;
+    /*background-color: white;*/
 }
 .searchbox {
     padding: 12px 20px 12px 40px !important;
