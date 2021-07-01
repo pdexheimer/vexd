@@ -9,10 +9,11 @@
     {{ uber_search_body() }}
     <br>
     <p>The <b>Virus Expression Database (VExD)</b> contains a comprehensive list of bulk RNA-Seq and microarray experiments that involve direct infection of human cells or tissue with a virus.  All data has been uniformly processed using a common gene reference (see <a href="{{ url_for('ui.methods') }}">Methods</a>) so that differentially expressed genes are as comparable as possible.</p>
+    <p>VExD currently contains {{ study_count }} different studies from GEO tracking infection of {{ virus_count }} distinct viruses.</p>
     <p>From this page, you can search by virus and/or tissue type.  The results will include a list of studies and the count of differentially expressed genes for each.</p>
     <h2>Example Searches</h2>
     <ul>
-        <li><a href="{{ url_for('ui.virus_results', q='Human gammaherpesvirus 4', tissue='') }}">Any cell infected with Epstein-Barr virus</a></li>
+        <li><a href="{{ url_for('ui.virus_results', q='Human gammaherpesvirus 4', tissue='', descendants=true) }}">Any cell infected with Epstein-Barr virus</a></li>
         <li><a href="{{ url_for('ui.virus_results', q='', tissue='BTO:0001025', descendants=false) }}">PBMCs infected with any virus</a></li>
         <li><a href="{{ url_for('ui.virus_results', q='Human immunodeficiency virus 1', tissue='BTO:0000089', descendants=true) }}">Any blood cell infected with HIV</a></li>
     </ul>

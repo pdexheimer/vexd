@@ -8,7 +8,11 @@ bp = Blueprint('ui', __name__, url_prefix='/')
 
 @bp.route('/')
 def vexd_home():
-    return render_template('homepage.html')
+    return render_template(
+        'homepage.html',
+        study_count=geo().num_studies(),
+        virus_count=geo().num_viruses()
+    )
 
 @bp.route('/virus')
 @use_kwargs({'q': fields.Str()}, location='query')
@@ -111,7 +115,7 @@ def methods():
 
 @bp.route('/about')
 def about():
-    return render_template('about.html')
+    return render_template('about.html', virus_counts=geo().count_by_virus())
 
 @bp.route('/help')
 def help():

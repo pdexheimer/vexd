@@ -66,9 +66,9 @@ nav a:hover {
     background-color: #333333;
     color: #ccc;
 }
-nav a:last-of-type {
+/*nav a:last-of-type {
     float: right;
-}
+}*/
 
 footer {
     margin-top: 2em;
@@ -112,7 +112,7 @@ td,th {
 }
 
 .gse_list tbody tr:nth-child(even) {
-    background-color: gainsboro;
+    background-color: #ccc;
 }
 .gse_list tbody tr:nth-child(odd) {
     background-color: mintcream;

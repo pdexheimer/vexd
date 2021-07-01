@@ -13,5 +13,17 @@
     <li>Krishna Roskin</li>
     <li>Matthew Weirauch</li>
 </ul>
-<p>Special thanks to Dr. Erica DePasquale for designing the VExD logo, Kevin Ernst for help with deploying the website, and all the members of the Roskin and Weirauch labs for their constructive feedback.</p>
+<p>Special thanks to Erica DePasquale for designing the VExD logo, Kevin Ernst for help with deploying the website, and all the members of the Roskin and Weirauch labs for their constructive feedback.</p>
+<h2>What viruses are in VExD?</h2>
+<p>The currently represented viruses are:</p>
+<table>
+    <thead>
+        <tr><th>Virus</th><th>Number of Studies</th><th>Number of Samples</th></tr>
+    </thead>
+    <tbody>
+        {%- for virus in virus_counts if virus._id != 'Uninfected' -%}
+        <tr><td><span class="species">{{ virus._id }}</span></td><td>{{ virus.study_count }}</td><td>{{ virus.sample_count }}</td></tr>
+        {%- endfor -%}
+    </tbody>
+</table>
 {% endblock %}

@@ -652,3 +652,21 @@ class GeoSearch:
             { '$project': { '_id': 0 } }
         ])
         return list(result)
+    
+    def num_studies(self):
+        return list(self.geo.aggregate([
+            { '$match': {'samples.valid_experiment': True} },
+            { '$count': 'num_studies' }
+        ]))[0]['num_studies']
+    
+    def num_viruses(self):
+        return list(self.geo.aggregate([
+            { '$match': {'samples.valid_experiment': True} },
+            { '$unwind': {'path': '$samples'} },
+            { '$match': {
+                'samples.valid_experiment': True,
+                'samples.normalized_virus': { '$ne': 'Uninfected' }
+            } },
+            { '$group': {'_id': '$samples.normalized_virus'} },
+            { '$count': 'num_viruses' }
+        ]))[0]['num_viruses']
