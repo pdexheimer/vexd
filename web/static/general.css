@@ -77,6 +77,10 @@ footer {
     text-align: center;
 }
 
+.bodytext {
+    margin: auto 3em;
+}
+
 input[type=text] {
     box-sizing: border-box;
     /*width: 100%;*/

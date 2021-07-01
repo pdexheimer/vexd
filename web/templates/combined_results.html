@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% from "utils.html" import cell_type, uber_search_head, uber_search_body %}
-{% block title %}Results{% endblock %}
+{% block title %}VExD - Results{% endblock %}
 {%- macro filtered_count(total, pf, reasons) -%}
 {% if total == pf %}{{ pf }}{% else -%}
 {% set line_break=joiner("<br>"|safe) %}

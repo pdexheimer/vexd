@@ -1,10 +1,19 @@
 {% extends "base.html" %}
 {% from "utils.html" import gene_search_head, gene_search_body %}
-{% block title %}Gene Search{% endblock %}
+{% block title %}VExD - Gene Search{% endblock %}
 {% block head %}
     {{ super() }}
     {{ gene_search_head() }}
 {% endblock %}
 {% block body %}
     {{ gene_search_body() }}
+    <br>
+    <p>From this page, you can query the expression of any gene across all experiments in the database.</p>
+    <h2>Example Searches</h2>
+    <ul>
+        <li><a href="{{ url_for('ui.display_gene_info', q='ENSG00000187608') }}">ISG15</a></li>
+        <li><a href="{{ url_for('ui.display_gene_info', q='ENSG00000162231') }}">NXF1</a></li>
+        <li><a href="{{ url_for('ui.display_gene_info', q='ENSG00000077150') }}">NFKB2</a></li>
+    </ul>
+    <p>More detailed instructions can be found on the <a href="{{ url_for('ui.help') }}">Help</a> page.</p>
 {% endblock %}

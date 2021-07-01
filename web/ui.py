@@ -111,8 +111,8 @@ def methods():
 
 @bp.route('/about')
 def about():
-    return render_template('homepage.html')
+    return render_template('about.html')
 
 @bp.route('/help')
 def help():
-    return render_template('homepage.html')
+    return render_template('help.html')
