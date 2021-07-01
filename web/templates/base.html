@@ -9,17 +9,17 @@
     </head>
     <body>
         <header>
-            <a href="{{ url_for('ui.vexd_home') }}"><img src="{{ url_for('static', filename='vexd_logo.svg') }}"></a>
-            <h1>Virus Expression Database</h1>
+            <a href="{{ url_for('ui.vexd_home') }}" id="home_icon"><img style="height: 9em" src="{{ url_for('static', filename='vexd_logo_bare.svg') }}"></a>
+            <h1 id="title"><span class="acronym">V</span>irus <span class="acronym">Ex</span>pression <span class="acronym">D</span>atabase</h1>
             <a id="cchmc" href="http://www.cincinnatichildrens.org/"><img src="{{ url_for('static', filename='Cchmc_brand_logo_with_clear_space.png') }}"></a>
+            <nav>
+                <a href="{{ url_for('ui.vexd_home') }}">Home</a>
+                <a href="{{ url_for('ui.gene_search') }}">Genes</a>
+                <a href="{{ url_for('ui.methods') }}">Methods</a>
+                <a href="{{ url_for('ui.about') }}">About VExD</a>
+                <a href="{{ url_for('ui.help') }}">Help</a>
+            </nav>
         </header>
-        <nav>
-            <a href="{{ url_for('ui.vexd_home') }}">Home</a>
-            <a href="{{ url_for('ui.gene_search') }}">Genes</a>
-            <a href="{{ url_for('ui.methods') }}">Methods</a>
-            <a href="{{ url_for('ui.about') }}">About VExD</a>
-            <a href="{{ url_for('ui.help') }}">Help</a>
-        </nav>
         {% block body %}{% endblock %}
         <footer>
             <p>A <a href="http://www.cincinnatichildrens.org/research/divisions/a/genomics-etiology/labs/weirauch/default/" title="Weirauch Research Lab">Weirauch Research Lab</a> Production</p>
