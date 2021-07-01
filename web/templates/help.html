@@ -14,7 +14,8 @@
     #browse_tree {
         height: 14em;
     }
-    #study_result {
+    #study_result,
+    #gene_result {
         width: 85%;
     }
 </style>
@@ -42,11 +43,22 @@
     <li>What defined this analysis type?  From top to bottom, this cell lists the study ID, virus, cell type, and platform.</li>
     <li>The title of the study in GEO</li>
     <li>The number of samples analyzed.  This is the number used in this analysis (ie, matching the conditions in the first cell), not in the entire study.  If a number is struck through, one or more samples were unable to be used even though they met the criteria - hover over the yellow exclamation point to find the reason.</li>
-    <li>The number of significant genes found, followed by the number that were up- and down-regulated by the virus.  Click any of these numbers to download a tab-separated file of results.  If the number of significant genes is 0, a test was performed but no genes reached significance.  If the &quot;number&quot; is &quot;--&quot;, no test was performed because the number of available samples (either infected or control) is less than two.</li>
+    <li>The number of significant genes found, followed by the number that were up- and down-regulated by the virus.  Click any of these numbers to download a tab-separated file of results.  If the number of significant genes is 0, a test was performed but no genes reached significance.  If the number is &quot;--&quot;, no test was performed because the number of available samples (either infected or control) is less than two.</li>
     <li>A link to download the complete differential expression analysis for this row as a tab-separated text file.</li>
 </ul>
 <h2>Searching for genes</h2>
 <h3>Gene Symbol/ID</h3>
 <p>Enter a gene symbol or Ensembl human gene ID (beginning with ENSG) into this box.  As you type, a suggestion list will pop up, which you can select from with the mouse or using the arrow keys and Enter.</p>
 <h2>Understanding gene search results</h2>
+<p>Following some basic information about the gene (name, aliases, etc), and a link to download the results as a tab-delimited text file, the results page shows the differential regulation of the gene in every experiment in which it is found.  Note that microarrays, particularly older varieties, do not include all genes. Results are ordered by increasing p-value.</p>
+<img class="screenshot" id="gene_result" src="{{ url_for('static', filename='gene_result.png') }}" />
+<p>Each line shows the gene's expression change in a single comparison (as before, comparisons are defined by a common study, virus, cell type, and platform).  The columns in the results are:</p>
+<ul>
+    <li>GEO Study ID</li>
+    <li>Virus name</li>
+    <li>Tissue/Cell type</li>
+    <li>Number of analyzed samples broken up by infection status &ndash; first infected samples, then uninfected controls</li>
+    <li>The fold change, relative to controls, found in this comparison.  Bolded values are at least 2-fold, which is the threshold for significance in VExD.</li>
+    <li>Benjamini-Hochberg adjusted p-value.  Bolded values are less than 0.05, which is the significance threshold in VExD.</li>
+</ul>
 {% endblock %}

@@ -155,3 +155,7 @@ td,th {
     padding-right: 0.4em;
     content: "";
 }
+
+abbr[title] {
+    text-decoration: underline dotted;
+}

@@ -1,0 +1,7 @@
+* Refactor code/rename repository to use "vexd" name
+* Finish downloading RNA-Seq data
+* Finish and publish an API
+* Refine study search - add "Advanced" with platform type and study ID
+* Make gene table sortable with javascript
+* Add links from gene table to relevant search results
+* Add widgets to adjust significance thresholds
