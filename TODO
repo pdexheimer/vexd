@@ -4,3 +4,10 @@
 * Make gene table sortable with javascript
 * Add links from gene table to relevant search results
 * Add widgets to adjust significance thresholds
+
+Meta-analysis (by rank) for a query -- what's the number one gene that goes up? etc
+Look for a journal home - find an article that's similar
+**Look for genes unique to a virus**
+Try aggregating by cell type instead of virus
+Try scaling up-regulated and down-regulated genes separately rather than ranking all of them
+Consider only significant genes (set fold change to zero for non-significant)
