@@ -91,15 +91,6 @@ def download_results(virus, study, platform, cell_type, geneSet):
     response.content_type = 'text/plain'
     return response
 
-# @bp.route('/search')
-# @use_kwargs({'q': fields.Str()}, location='query')
-# def search_results(q):
-#     return render_template('search_results.html', gse_list=geo().search_gse(virus_name=q))
-
-# @bp.route('/statistics')
-# def statistics():
-#     return render_template('stats.html', virus_counts=geo().count_by_virus())
-
 @bp.route('/heatmap')
 @use_kwargs({'q': fields.Str()}, location='query')
 def heatmap(q):
@@ -112,6 +103,10 @@ def heatmap(q):
 @bp.route('/methods')
 def methods():
     return render_template('methods.html')
+
+@bp.route('/api')
+def api_docs():
+    return render_template('api_docs.html')
 
 @bp.route('/about')
 def about():

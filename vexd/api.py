@@ -1,17 +1,21 @@
+import re
+
 from flask import Blueprint, abort, jsonify
 from webargs import fields, validate
-from webargs.flaskparser import use_args
+from webargs.flaskparser import use_args, use_kwargs
 
 from .geo import geo
 
 bp = Blueprint('api', __name__, url_prefix='/api')
 
-@bp.route('/virus_info/<name>')
-def virus_info(name):
-    result = geo().get_virus(name)
-    if result is None:
-        abort(404, f'{name} is not a recognized virus species')
-    return result
+@bp.errorhandler(400)
+@bp.errorhandler(404)
+@bp.errorhandler(422)
+def json_error(e):
+    return jsonify(error=str(e)), e.code
+
+# Typeahead endpoints for autocomplete boxes
+# Not part of the public API
 
 @bp.route('/virus_typeahead/<text>')
 def virus_typeahead(text):
@@ -21,7 +25,36 @@ def virus_typeahead(text):
 def gene_typeahead(text):
     return jsonify(geo().find_gene_by_prefix(text))
 
-@bp.route('/public_data/<id>')
+# Virus Endpoints
+
+@bp.route('/v1/virus/name/<name>')
+def virus_info(name):
+    result = geo().get_virus(name)
+    if result is None:
+        abort(404, description=f'{name} is not a recognized virus species')
+    return result
+
+@bp.route('/v1/virus/alias/<alias>')
+def virus_lookup(alias):
+    return jsonify({
+        'alias': alias,
+        'results': geo().resolve_virus_alias(alias)
+    })
+
+@bp.route('/v1/virus', methods=['POST'])
+@use_kwargs({'name': fields.Str(), 'alias': fields.Str()}, location='json')
+def meta_virus_lookup(**kwargs):
+    if 'name' not in kwargs and 'alias' not in kwargs:
+        abort(400, "Must specify either 'name' or 'alias'")
+    if 'name' in kwargs and 'alias' in kwargs:
+        abort(400, "Must specify one of 'name' or 'alias', not both")
+    if 'name' in kwargs:
+        return virus_info(kwargs['name'])
+    return virus_lookup(kwargs['alias'])
+
+# GEO Endpoints
+
+@bp.route('/v1/geo/<id>')
 def geo_lookup(id):
     id = id.upper()
     result = geo().get_gse_info(id)
@@ -29,24 +62,54 @@ def geo_lookup(id):
         abort(404, f'{id} has not been curated')
     return result
 
-geo_search_args = {
-    'virus': fields.Str(missing=None),
-    'platform': fields.Str(missing=None, validate=validate.OneOf(['microarray', 'ngs'])),
-    'with_pubmed': fields.Bool(missing=False),
-    'only_valid': fields.Bool(missing=True),
-    'human_only_viruses': fields.Bool(missing=True),
+# Search Endpoints
+
+study_search_args = {
+    'virus': fields.Str(missing=''),
+    'bto_id': fields.Str(
+        missing='', 
+        validate=validate.Regexp('BTO:\d+', flags=re.IGNORECASE)#, error="'{input}' is not a valid BTO ID (should be BTO:xxxxxx)")
+    ),
+    'include_bto_children': fields.Bool(missing=True)
 }
 
-@bp.route('/public_data/')
-@use_args(geo_search_args, location='query')
-def geo_search(args):
-    result = geo().search_gse(
-        virus_name=args['virus'],
-        platform=args['platform'],
-        with_pubmed=args['with_pubmed'],
-        only_valid=args['only_valid'],
-        human_only_virus=args['human_only_viruses']
+@bp.route('/v1/search', methods=["POST"])
+@use_args(study_search_args)
+def search_studies(args):
+    return jsonify(geo().search_studies(args['virus'], args['bto_id'].upper(), args['include_bto_children']))
+
+result_args = {
+    'study': fields.Str(
+        missing='',
+        validate=validate.Regexp('GSE\d+', flags=re.IGNORECASE)
+    ),
+    'virus': fields.Str(missing=''),
+    'bto_id': fields.Str(
+        missing='', 
+        validate=validate.Regexp('BTO:\d+', flags=re.IGNORECASE)#, error="'{input}' is not a valid BTO ID (should be BTO:xxxxxx)")
+    ),
+    'platform': fields.Str(missing=''),
+    'gene': fields.Str(
+        missing='',
+        validate=validate.Regexp('ENSG\d+', flags=re.IGNORECASE)
+    ),
+    'set': fields.Str(
+        missing='sig',
+        validate=validate.OneOf(['all', 'sig', 'up', 'down'])
     )
-    if result is None:
-        return jsonify([])
-    return jsonify(result)
+}
+
+@bp.route('/v1/results', methods=['POST'])
+@use_args(result_args)
+def search_results(args):
+    if args['gene'] and (args['study'] or args['virus'] or args['bto_id'] or args['platform']):
+        abort(400, description='Either search by gene or analysis (study/virus/bto), not both')
+    if args['gene']:
+        return jsonify(geo().get_results_by_gene(args['gene']))
+    return jsonify(geo().get_analysis_results(
+        args['study'],
+        args['virus'],
+        args['bto_id'],
+        args['platform'],
+        args['set']
+    ))

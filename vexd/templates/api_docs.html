@@ -1,0 +1,994 @@
+{% extends "base.html" %}
+{% block title %}VExD - API Documentation{% endblock %}
+{% block head %}
+    {{ super() }}
+    <style>
+    h3 {
+        margin-left: 7%;
+    }
+    .params {
+        width: 80%;
+        margin: 0 auto;
+    }
+    .rest {
+        width: 80%;
+        margin: 0 auto;
+        max-height: 12em;
+        overflow: auto;
+        background-color: #DDDDDD;
+    }
+    .rest pre {
+        margin: 0;
+    }
+    </style>
+{% endblock %}
+{% block body %}
+<h2>Developer Access</h2>
+<p>Developers can access the features of VExD using our JSON-based REST API.</p>
+<h2>Study Search</h2>
+<p>Send a POST request to <code>{{ request.root_url }}api/v1/search</code> with the search parameters in a JSON object as the body.  This endpoint mirrors the <a href="{{ url_for('ui.vexd_home') }}">Study Search</a> interface on the website.</p>
+<table class="params">
+<thead>
+<tr><th>Parameter</th><th>Description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>virus</code></td><td>The virus name, specified as the ICTV species name (case-sensitive).  Use the virus search endpoints to find a valid species name.</td></tr>
+<tr><td><code>bto_id</code></td><td>The ontology ID for the tissue/cell type to search for.  Of the form <code>BTO:xxxxx</code>, returned from the BTO lookup service in the <code>obo_id</code> element.</td></tr>
+<tr><td><code>include_bto_children</code></td><td>A boolean value (true/false).  If true, children (ie, more specific terms) of the BTO ID will be included in the search.</td></tr>
+</tbody>
+</table>
+<h3>Example Call</h3>
+<div class="rest">
+<code>curl -H "Content-Type: application/json" -d '{"virus": "Cardiovirus A"}' {{ request.root_url }}api/v1/search</code>
+</div>
+<h3>Example Result</h3>
+<div class="rest">
+<pre><samp>[
+  {
+    "bto_id": "BTO:0005590", 
+    "bto_name": "cervical adenocarcinoma cell line", 
+    "cell_type": "HeLa", 
+    "controls": [
+      {
+        "biosample": "SAMN10482736", 
+        "bto_id": "BTO:0005590", 
+        "bto_name": "cervical adenocarcinoma cell line", 
+        "cell_type": "HeLa", 
+        "cellosaurus_id": "CVCL_0030", 
+        "cellosaurus_name": "HeLa", 
+        "id": "GSM3489316", 
+        "normalized_virus": "Uninfected", 
+        "pct_pseudoaligned": 79.8, 
+        "pct_unique": 19.9, 
+        "pseudoaligned_reads": 14469981, 
+        "reported_virus": "none", 
+        "sra": "SRX5063207", 
+        "title": "HeLa ctrl poly(A)+ RNA", 
+        "total_reads": 18142277, 
+        "unique_reads": 3617019, 
+        "valid_experiment": true
+      }, 
+      {
+        "biosample": "SAMN10482744", 
+        "bto_id": "BTO:0005590", 
+        "bto_name": "cervical adenocarcinoma cell line", 
+        "cell_type": "HeLa", 
+        "cellosaurus_id": "CVCL_0030", 
+        "cellosaurus_name": "HeLa", 
+        "id": "GSM3489328", 
+        "normalized_virus": "Uninfected", 
+        "pct_pseudoaligned": 77.8, 
+        "pct_unique": 19.3, 
+        "pseudoaligned_reads": 13190104, 
+        "reported_virus": "none", 
+        "sra": "SRX5063219", 
+        "title": "HeLa wt ctrl poly(A)+ RNA replicate 1", 
+        "total_reads": 16944870, 
+        "unique_reads": 3269805, 
+        "valid_experiment": true
+      }, 
+      {
+        "biosample": "SAMN10482743", 
+        "bto_id": "BTO:0005590", 
+        "bto_name": "cervical adenocarcinoma cell line", 
+        "cell_type": "HeLa", 
+        "cellosaurus_id": "CVCL_0030", 
+        "cellosaurus_name": "HeLa", 
+        "id": "GSM3489329", 
+        "normalized_virus": "Uninfected", 
+        "pct_pseudoaligned": 78.9, 
+        "pct_unique": 18.2, 
+        "pseudoaligned_reads": 16344817, 
+        "reported_virus": "none", 
+        "sra": "SRX5063220", 
+        "title": "HeLa wt ctrl poly(A)+ RNA replicate 2", 
+        "total_reads": 20727407, 
+        "unique_reads": 3777952, 
+        "valid_experiment": true
+      }
+    ], 
+    "down": 812, 
+    "enough_samples": true, 
+    "missing_control_reasons": [
+      {
+        "_id": null, 
+        "count": 3
+      }
+    ], 
+    "missing_sample_reasons": [
+      {
+        "_id": null, 
+        "count": 2
+      }
+    ], 
+    "pf_controls": [
+      {
+        "biosample": "SAMN10482736", 
+        "bto_id": "BTO:0005590", 
+        "bto_name": "cervical adenocarcinoma cell line", 
+        "cell_type": "HeLa", 
+        "cellosaurus_id": "CVCL_0030", 
+        "cellosaurus_name": "HeLa", 
+        "id": "GSM3489316", 
+        "normalized_virus": "Uninfected", 
+        "pct_pseudoaligned": 79.8, 
+        "pct_unique": 19.9, 
+        "pseudoaligned_reads": 14469981, 
+        "reported_virus": "none", 
+        "sra": "SRX5063207", 
+        "title": "HeLa ctrl poly(A)+ RNA", 
+        "total_reads": 18142277, 
+        "unique_reads": 3617019, 
+        "valid_experiment": true
+      }, 
+      {
+        "biosample": "SAMN10482744", 
+        "bto_id": "BTO:0005590", 
+        "bto_name": "cervical adenocarcinoma cell line", 
+        "cell_type": "HeLa", 
+        "cellosaurus_id": "CVCL_0030", 
+        "cellosaurus_name": "HeLa", 
+        "id": "GSM3489328", 
+        "normalized_virus": "Uninfected", 
+        "pct_pseudoaligned": 77.8, 
+        "pct_unique": 19.3, 
+        "pseudoaligned_reads": 13190104, 
+        "reported_virus": "none", 
+        "sra": "SRX5063219", 
+        "title": "HeLa wt ctrl poly(A)+ RNA replicate 1", 
+        "total_reads": 16944870, 
+        "unique_reads": 3269805, 
+        "valid_experiment": true
+      }, 
+      {
+        "biosample": "SAMN10482743", 
+        "bto_id": "BTO:0005590", 
+        "bto_name": "cervical adenocarcinoma cell line", 
+        "cell_type": "HeLa", 
+        "cellosaurus_id": "CVCL_0030", 
+        "cellosaurus_name": "HeLa", 
+        "id": "GSM3489329", 
+        "normalized_virus": "Uninfected", 
+        "pct_pseudoaligned": 78.9, 
+        "pct_unique": 18.2, 
+        "pseudoaligned_reads": 16344817, 
+        "reported_virus": "none", 
+        "sra": "SRX5063220", 
+        "title": "HeLa wt ctrl poly(A)+ RNA replicate 2", 
+        "total_reads": 20727407, 
+        "unique_reads": 3777952, 
+        "valid_experiment": true
+      }
+    ], 
+    "pf_samples": [
+      {
+        "biosample": "SAMN10482742", 
+        "bto_id": "BTO:0005590", 
+        "bto_name": "cervical adenocarcinoma cell line", 
+        "cell_type": "HeLa", 
+        "cellosaurus_id": "CVCL_0030", 
+        "cellosaurus_name": "HeLa", 
+        "id": "GSM3489330", 
+        "normalized_virus": "Cardiovirus A", 
+        "pct_pseudoaligned": 24.6, 
+        "pct_unique": 10.2, 
+        "pseudoaligned_reads": 5391705, 
+        "reported_virus": "EMCV", 
+        "sra": "SRX5063221", 
+        "timepoint": "24 hrs", 
+        "title": "HeLa wt EMCV poly(A)+ RNA replicate 1", 
+        "total_reads": 21884963, 
+        "unique_reads": 2230757, 
+        "valid_experiment": true
+      }, 
+      {
+        "biosample": "SAMN10482741", 
+        "bto_id": "BTO:0005590", 
+        "bto_name": "cervical adenocarcinoma cell line", 
+        "cell_type": "HeLa", 
+        "cellosaurus_id": "CVCL_0030", 
+        "cellosaurus_name": "HeLa", 
+        "id": "GSM3489331", 
+        "normalized_virus": "Cardiovirus A", 
+        "pct_pseudoaligned": 23.5, 
+        "pct_unique": 9.2, 
+        "pseudoaligned_reads": 4502592, 
+        "reported_virus": "EMCV", 
+        "sra": "SRX5063222", 
+        "timepoint": "24 hrs", 
+        "title": "HeLa wt EMCV poly(A)+ RNA replicate 2", 
+        "total_reads": 19167959, 
+        "unique_reads": 1764924, 
+        "valid_experiment": true
+      }
+    ], 
+    "samples": [
+      {
+        "biosample": "SAMN10482742", 
+        "bto_id": "BTO:0005590", 
+        "bto_name": "cervical adenocarcinoma cell line", 
+        "cell_type": "HeLa", 
+        "cellosaurus_id": "CVCL_0030", 
+        "cellosaurus_name": "HeLa", 
+        "id": "GSM3489330", 
+        "normalized_virus": "Cardiovirus A", 
+        "pct_pseudoaligned": 24.6, 
+        "pct_unique": 10.2, 
+        "pseudoaligned_reads": 5391705, 
+        "reported_virus": "EMCV", 
+        "sra": "SRX5063221", 
+        "timepoint": "24 hrs", 
+        "title": "HeLa wt EMCV poly(A)+ RNA replicate 1", 
+        "total_reads": 21884963, 
+        "unique_reads": 2230757, 
+        "valid_experiment": true
+      }, 
+      {
+        "biosample": "SAMN10482741", 
+        "bto_id": "BTO:0005590", 
+        "bto_name": "cervical adenocarcinoma cell line", 
+        "cell_type": "HeLa", 
+        "cellosaurus_id": "CVCL_0030", 
+        "cellosaurus_name": "HeLa", 
+        "id": "GSM3489331", 
+        "normalized_virus": "Cardiovirus A", 
+        "pct_pseudoaligned": 23.5, 
+        "pct_unique": 9.2, 
+        "pseudoaligned_reads": 4502592, 
+        "reported_virus": "EMCV", 
+        "sra": "SRX5063222", 
+        "timepoint": "24 hrs", 
+        "title": "HeLa wt EMCV poly(A)+ RNA replicate 2", 
+        "total_reads": 19167959, 
+        "unique_reads": 1764924, 
+        "valid_experiment": true
+      }
+    ], 
+    "signif": 908, 
+    "study": "GSE122967", 
+    "study_order": 122967, 
+    "title": "Structure and degradation of circular RNAs regulate PKR activation in innate immunity", 
+    "up": 96, 
+    "virus": "Cardiovirus A"
+  }
+]</samp></pre>
+</div>
+<table class="params">
+<thead><tr><th>Key</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>controls</code> / <code>samples</code></td><td>The samples from this analysis, broken up into uninfected controls and infected samples.</td></tr>
+<tr><td><code>pf_controls</code> / <code>pf_samples</code></td><td>The subset of samples that pass quality control filters and are actually used in differential analysis.</td></tr>
+<tr><td><code>missing_control_reasons</code> / <code>missing_sample_reasons</code></td><td>Human-readable descriptions of filters that individual samples failed (in the <code>_id</code> field), along with the number of samples affected by that filter</td></tr>
+<tr><td><code>signif</code> / <code>up</code> / <code>down</code></td><td>The number of genes found to be significant (up-regulated / down-regulated) in this differential expression analysis.</td></tr>
+<tr><td><code>cell_type</code></td><td>The curator's free text annotation of the cell type</td></tr>
+<tr><td><code>bto_id</code> / <code>bto_name</code></td><td>The BTO term associated with this cell type</td></tr>
+<tr><td><code>cellosaurus_id</code> / <code>cellosaurus_name</code></td><td>The <a href="https://web.expasy.org/cellosaurus/">Cellosaurus</a> term associated with this cell line (if appropriate)</td></tr>
+</tbody>
+</table>
+<h2>Differential Expression Results</h2>
+<p>Send a POST request to <code>{{ request.root_url }}api/v1/results</code>. The JSON parameters in the body control whether the results are the differential expression results from a single analysis or are the results of a single gene across all analyses.</p>
+<table class="params">
+<thead><tr><th>Parameter</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>virus</code> / <code>bto_id</code> / <code>study</code></td><td>Describe the differential expression analysis to return results for.  <code>virus</code> and <code>bto_id</code> are as in the study search, while <code>study</code> is the GEO Series ID (<code>GSExxxx</code>)</td></tr>
+<tr><td><code>platform</code></td><td>Not normally needed.  For the small number of studies that include multiple microarray platforms, the name of the platform to return results for.  This value can be found in the results of the search endpoint</td></tr>
+<tr><td><code>set</code></td><td>Must be one of the strings <code>all</code>, <code>sig</code>, <code>up</code>, or <code>down</code>.  Defaults to <code>sig</code>.  Should the results include all genes in the analysis, or only the significant, significant up-regulated, or significant down-regulated genes?</td></tr>
+<tr><td><code>gene</code></td><td>Used to get results for a single gene across all analyses.  Must be an (unversioned) Ensembl human gene ID</td></tr>
+</tbody>
+</table>
+<h3>Example Call</h3>
+<div class="rest">
+<code>curl -H "Content-Type: application/json" -d '{"study": "GSE122967", "bto_id": "BTO:0005590", "virus": "Cardiovirus A", "set": "up"}' {{ request.root_url }}api/v1/results</code>
+</div>
+<h3>Example Result (only first 5 entries)</h3>
+<div class="rest">
+<pre><samp>[
+  {
+    "adj_p": 0.04100841794815965, 
+    "bto_id": "BTO:0005590", 
+    "bto_name": "cervical adenocarcinoma cell line", 
+    "cell_type": "HeLa", 
+    "control_count": 3, 
+    "control_mean": 1.3683736333333334, 
+    "control_stdev": 0.35913034316777437, 
+    "ensembl_id": "ENSG00000009724", 
+    "fc": 4.757289780813905, 
+    "infect_count": 2, 
+    "infect_mean": 6.5473228, 
+    "infect_stdev": 0.073359217278267, 
+    "logfc": 2.2501399068665013, 
+    "raw_p": 0.0009308801003470448, 
+    "study": "GSE122967", 
+    "symbol": "MASP2", 
+    "virus": "Cardiovirus A"
+  }, 
+  {
+    "adj_p": 0.049924630946883805, 
+    "bto_id": "BTO:0005590", 
+    "bto_name": "cervical adenocarcinoma cell line", 
+    "cell_type": "HeLa", 
+    "control_count": 3, 
+    "control_mean": 30.878466666666665, 
+    "control_stdev": 7.442830010374639, 
+    "ensembl_id": "ENSG00000023608", 
+    "fc": 5.423027365122257, 
+    "infect_count": 2, 
+    "infect_mean": 167.499, 
+    "infect_stdev": 9.383306986345474, 
+    "logfc": 2.4390984503506443, 
+    "raw_p": 0.004631877774962964, 
+    "study": "GSE122967", 
+    "symbol": "SNAPC1", 
+    "virus": "Cardiovirus A"
+  }, 
+  {
+    "adj_p": 0.03629470544846246, 
+    "bto_id": "BTO:0005590", 
+    "bto_name": "cervical adenocarcinoma cell line", 
+    "cell_type": "HeLa", 
+    "control_count": 3, 
+    "control_mean": 8.290189433333333, 
+    "control_stdev": 1.5662105627949088, 
+    "ensembl_id": "ENSG00000048052", 
+    "fc": 3.519682416244291, 
+    "infect_count": 2, 
+    "infect_mean": 29.204030799999998, 
+    "infect_stdev": 1.1539815791764116, 
+    "logfc": 1.8154452592092707, 
+    "raw_p": 0.0006004118414923308, 
+    "study": "GSE122967", 
+    "symbol": "HDAC9", 
+    "virus": "Cardiovirus A"
+  }, 
+  {
+    "adj_p": 0.04100841794815965, 
+    "bto_id": "BTO:0005590", 
+    "bto_name": "cervical adenocarcinoma cell line", 
+    "cell_type": "HeLa", 
+    "control_count": 3, 
+    "control_mean": 67.84573633333333, 
+    "control_stdev": 6.725482411489328, 
+    "ensembl_id": "ENSG00000068745", 
+    "fc": 2.0056602249726767, 
+    "infect_count": 2, 
+    "infect_mean": 136.08555139999999, 
+    "infect_stdev": 4.666664905211042, 
+    "logfc": 1.0040772224676353, 
+    "raw_p": 0.0010619038372366542, 
+    "study": "GSE122967", 
+    "symbol": "IP6K2", 
+    "virus": "Cardiovirus A"
+  }, 
+  {
+    "adj_p": 0.03629470544846246, 
+    "bto_id": "BTO:0005590", 
+    "bto_name": "cervical adenocarcinoma cell line", 
+    "cell_type": "HeLa", 
+    "control_count": 3, 
+    "control_mean": 0.5473756666666666, 
+    "control_stdev": 0.4772280784743636, 
+    "ensembl_id": "ENSG00000080709", 
+    "fc": 10.150912281184384, 
+    "infect_count": 2, 
+    "infect_mean": 5.6478715, 
+    "infect_stdev": 0.24590133290509122, 
+    "logfc": 3.3435374857851747, 
+    "raw_p": 0.000600476186897834, 
+    "study": "GSE122967", 
+    "symbol": "KCNN2", 
+    "virus": "Cardiovirus A"
+  }
+]</samp></pre>
+</div>
+<h3>Example Call</h3>
+<div class="rest">
+<code>curl -H "Content-Type: application/json" -d '{"gene": "ENSG00000136244"}' {{ request.root_url }}api/v1/results</code>
+</div>
+<h3>Example Result (only first 5 entries)</h3>
+<div class="rest">
+<pre><samp>[
+  {
+    "adj_p": 7.004760794543872e-09, 
+    "bto_id": "BTO:0002042", 
+    "bto_name": "dendritic cell", 
+    "cell_type": "dendritic cells", 
+    "control_count": 18, 
+    "control_mean": 5.070117777777778, 
+    "control_stdev": 0.4109717297498634, 
+    "ensembl_id": "ENSG00000136244", 
+    "fc": 7.9008415288380185, 
+    "infect_count": 39, 
+    "infect_mean": 8.052124102564104, 
+    "infect_stdev": 2.0677967665593378, 
+    "logfc": 2.982006324786326, 
+    "platform": "HG-U133_Plus_2", 
+    "probeset_id": "ENSG00000136244_at", 
+    "raw_p": 4.8393341158801226e-11, 
+    "study": "GSE18791", 
+    "virus": "Avian orthoavulavirus 1"
+  }, 
+  {
+    "adj_p": 1.1919237811528051e-06, 
+    "bto_id": "BTO:0002900", 
+    "bto_name": "monocyte-derived dendritic cell", 
+    "cell_type": "Dendritic cells (monocyte-derived)", 
+    "control_count": 4, 
+    "control_mean": 6.932202500000001, 
+    "control_stdev": 0.3311585346803951, 
+    "ensembl_id": "ENSG00000136244", 
+    "fc": 66.57397932962883, 
+    "infect_count": 10, 
+    "infect_mean": 12.989088999999998, 
+    "infect_stdev": 0.9677942769279241, 
+    "logfc": 6.056886499999997, 
+    "platform": "HG_U95Av2", 
+    "probeset_id": "ENSG00000136244_at", 
+    "raw_p": 7.314210733632824e-10, 
+    "study": "GSE980", 
+    "virus": "Measles morbillivirus"
+  }, 
+  {
+    "adj_p": 2.8265935969966895e-06, 
+    "bto_id": "BTO:0002922", 
+    "bto_name": "bronchial epithelial cell", 
+    "cell_type": "bronchial epithelial", 
+    "control_count": 51, 
+    "control_mean": 6.514770196078429, 
+    "control_stdev": 0.7517007269691581, 
+    "ensembl_id": "ENSG00000136244", 
+    "fc": 2.6581662894258953, 
+    "infect_count": 45, 
+    "infect_mean": 7.925201555555555, 
+    "infect_stdev": 1.2603579331861454, 
+    "logfc": 1.4104313594771254, 
+    "platform": "HG-U219", 
+    "probeset_id": "ENSG00000136244_at", 
+    "raw_p": 8.244832740883855e-09, 
+    "study": "GSE71766", 
+    "virus": "Rhinovirus A"
+  }, 
+  {
+    "adj_p": 1.3719937579352228e-05, 
+    "bto_id": "BTO:0000553", 
+    "bto_name": "peripheral blood", 
+    "cell_type": "blood", 
+    "control_count": 272, 
+    "control_mean": 5.18780698529412, 
+    "control_stdev": 0.19810295085385143, 
+    "ensembl_id": "ENSG00000136244", 
+    "fc": 0.9545627949279035, 
+    "infect_count": 379, 
+    "infect_mean": 5.1207189973614815, 
+    "infect_stdev": 0.14898294981118404, 
+    "logfc": -0.0670879879326387, 
+    "platform": "HG-U133A_2", 
+    "probeset_id": "ENSG00000136244_at", 
+    "raw_p": 3.2430000823428584e-06, 
+    "study": "GSE73072", 
+    "virus": "Human orthopneumovirus"
+  }, 
+  {
+    "adj_p": 0.00024491949351455693, 
+    "bto_id": "BTO:0000876", 
+    "bto_name": "monocyte", 
+    "cell_type": "Monocyte", 
+    "control_count": 6, 
+    "control_mean": 7.680318333333333, 
+    "control_stdev": 0.6061121997589776, 
+    "ensembl_id": "ENSG00000136244", 
+    "fc": 62.60560845097032, 
+    "infect_count": 6, 
+    "infect_mean": 13.648538333333333, 
+    "infect_stdev": 0.17282264196761588, 
+    "logfc": 5.96822, 
+    "platform": "HG_U95Av2", 
+    "probeset_id": "ENSG00000136244_at", 
+    "raw_p": 6.002088538900637e-07, 
+    "study": "GSE11408", 
+    "virus": "Human betaherpesvirus 5"
+  }
+]</samp></pre>
+</div>
+<table class="params">
+<thead><tr><th>Key</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>raw_p</code> / <code>adj_p</code></td><td>P-values (raw and Benjamini-Hochberg adjusted) for this gene in this analysis</td></tr>
+<tr><td><code>control_count</code> / <code>infect_count</code></td><td>The number of uninfected / infected samples used in this analysis</td></tr>
+<tr><td><code>control_mean</code> / <code>infect_mean</code></td><td>The mean expression of this gene among the uninfected / infected samples</td></tr>
+<tr><td><code>control_stdev</code> / <code>infect_stdev</code></td><td>The standard deviation of this gene among the uninfected / infected samples</td></tr>
+<tr><td><code>fc</code> / <code>logfc</code></td><td>The fold change of this gene in linear / log<sub>2</sub> space, relative to uninfected controls.</td></tr>
+</tbody>
+</table>
+<h2>GEO Study Information</h2>
+<p>All GEO studies that were curated are available through this endpoint.  <em>Note that this endpoint does <b>not</b> include all studies in GEO</em> - only those which were curated while looking for virus infection.  To get information about a study, send a GET request to <code>{{ request.root_url }}api/v1/geo/<var>GSE ID</var></code>.</p>
+<h3>Example Call</h3>
+<div class="rest">
+<code>curl {{ request.root_url }}api/v1/geo/GSE122967</code>
+</div>
+<h3>Example Result</h3>
+<div class="rest">
+<pre><samp>{
+  "bioproject": "PRJNA507020", 
+  "id": "GSE122967", 
+  "platform": {
+    "id": "GPL18573", 
+    "name": "Illumina NextSeq 500 (Homo sapiens)", 
+    "type": "ngs"
+  }, 
+  "pubmed": [
+    31031002
+  ], 
+  "samples": [
+    {
+      "biosample": "SAMN10482736", 
+      "bto_id": "BTO:0005590", 
+      "bto_name": "cervical adenocarcinoma cell line", 
+      "cell_type": "HeLa", 
+      "cellosaurus_id": "CVCL_0030", 
+      "cellosaurus_name": "HeLa", 
+      "id": "GSM3489316", 
+      "normalized_virus": "Uninfected", 
+      "pct_pseudoaligned": 79.8, 
+      "pct_unique": 19.9, 
+      "pseudoaligned_reads": 14469981, 
+      "reported_virus": "none", 
+      "sra": "SRX5063207", 
+      "title": "HeLa ctrl poly(A)+ RNA", 
+      "total_reads": 18142277, 
+      "unique_reads": 3617019, 
+      "valid_experiment": true
+    }, 
+    {
+      "biosample": "SAMN10482755", 
+      "bto_id": "BTO:0005590", 
+      "bto_name": "cervical adenocarcinoma cell line", 
+      "cell_type": "HeLa", 
+      "cellosaurus_id": "CVCL_0030", 
+      "cellosaurus_name": "HeLa", 
+      "extra_info": "poly(I:C) treated", 
+      "id": "GSM3489317", 
+      "invalid_reason": "Extra interventions", 
+      "normalized_virus": "Uninfected", 
+      "reported_virus": "none", 
+      "sra": "SRX5063208", 
+      "title": "HeLa poly(I:C) poly(A)+ RNA", 
+      "valid_experiment": false
+    }, 
+    {
+      "biosample": "SAMN10482750", 
+      "bto_id": "BTO:0005590", 
+      "bto_name": "cervical adenocarcinoma cell line", 
+      "cell_type": "HeLa", 
+      "cellosaurus_id": "CVCL_0030", 
+      "cellosaurus_name": "HeLa", 
+      "extra_info": "RNaseL KO", 
+      "id": "GSM3489322", 
+      "invalid_reason": "Extra interventions", 
+      "normalized_virus": "Uninfected", 
+      "reported_virus": "none", 
+      "sra": "SRX5063213", 
+      "title": "HeLa RNaseL KO ctrl poly(A)+ RNA", 
+      "valid_experiment": false
+    }, 
+    {
+      "biosample": "SAMN10482749", 
+      "bto_id": "BTO:0005590", 
+      "bto_name": "cervical adenocarcinoma cell line", 
+      "cell_type": "HeLa", 
+      "cellosaurus_id": "CVCL_0030", 
+      "cellosaurus_name": "HeLa", 
+      "extra_info": "RNaseL KO, poly(I:C) treated", 
+      "id": "GSM3489323", 
+      "invalid_reason": "Extra interventions", 
+      "normalized_virus": "Uninfected", 
+      "reported_virus": "none", 
+      "sra": "SRX5063214", 
+      "title": "HeLa RNaseL KO poly(I:C) poly(A)+ RNA", 
+      "valid_experiment": false
+    }, 
+    {
+      "biosample": "SAMN10482744", 
+      "bto_id": "BTO:0005590", 
+      "bto_name": "cervical adenocarcinoma cell line", 
+      "cell_type": "HeLa", 
+      "cellosaurus_id": "CVCL_0030", 
+      "cellosaurus_name": "HeLa", 
+      "id": "GSM3489328", 
+      "normalized_virus": "Uninfected", 
+      "pct_pseudoaligned": 77.8, 
+      "pct_unique": 19.3, 
+      "pseudoaligned_reads": 13190104, 
+      "reported_virus": "none", 
+      "sra": "SRX5063219", 
+      "title": "HeLa wt ctrl poly(A)+ RNA replicate 1", 
+      "total_reads": 16944870, 
+      "unique_reads": 3269805, 
+      "valid_experiment": true
+    }, 
+    {
+      "biosample": "SAMN10482743", 
+      "bto_id": "BTO:0005590", 
+      "bto_name": "cervical adenocarcinoma cell line", 
+      "cell_type": "HeLa", 
+      "cellosaurus_id": "CVCL_0030", 
+      "cellosaurus_name": "HeLa", 
+      "id": "GSM3489329", 
+      "normalized_virus": "Uninfected", 
+      "pct_pseudoaligned": 78.9, 
+      "pct_unique": 18.2, 
+      "pseudoaligned_reads": 16344817, 
+      "reported_virus": "none", 
+      "sra": "SRX5063220", 
+      "title": "HeLa wt ctrl poly(A)+ RNA replicate 2", 
+      "total_reads": 20727407, 
+      "unique_reads": 3777952, 
+      "valid_experiment": true
+    }, 
+    {
+      "biosample": "SAMN10482742", 
+      "bto_id": "BTO:0005590", 
+      "bto_name": "cervical adenocarcinoma cell line", 
+      "cell_type": "HeLa", 
+      "cellosaurus_id": "CVCL_0030", 
+      "cellosaurus_name": "HeLa", 
+      "id": "GSM3489330", 
+      "normalized_virus": "Cardiovirus A", 
+      "pct_pseudoaligned": 24.6, 
+      "pct_unique": 10.2, 
+      "pseudoaligned_reads": 5391705, 
+      "reported_virus": "EMCV", 
+      "sra": "SRX5063221", 
+      "timepoint": "24 hrs", 
+      "title": "HeLa wt EMCV poly(A)+ RNA replicate 1", 
+      "total_reads": 21884963, 
+      "unique_reads": 2230757, 
+      "valid_experiment": true
+    }, 
+    {
+      "biosample": "SAMN10482741", 
+      "bto_id": "BTO:0005590", 
+      "bto_name": "cervical adenocarcinoma cell line", 
+      "cell_type": "HeLa", 
+      "cellosaurus_id": "CVCL_0030", 
+      "cellosaurus_name": "HeLa", 
+      "id": "GSM3489331", 
+      "normalized_virus": "Cardiovirus A", 
+      "pct_pseudoaligned": 23.5, 
+      "pct_unique": 9.2, 
+      "pseudoaligned_reads": 4502592, 
+      "reported_virus": "EMCV", 
+      "sra": "SRX5063222", 
+      "timepoint": "24 hrs", 
+      "title": "HeLa wt EMCV poly(A)+ RNA replicate 2", 
+      "total_reads": 19167959, 
+      "unique_reads": 1764924, 
+      "valid_experiment": true
+    }
+  ], 
+  "sra": "SRP170763", 
+  "submission": {
+    "country": "China", 
+    "date_str": "Nov 26 2018", 
+    "epoch_days": 737024, 
+    "institution": "Chinese Academy of Sciences", 
+    "submitter": "Li Yang"
+  }, 
+  "summary": "RNase L\u2013mediated rapid degradation of circRNAs is required for PKR activation in innate immune responses and linked to the autoimmune disease systemic lupus erythematosus.", 
+  "title": "Structure and degradation of circular RNAs regulate PKR activation in innate immunity"
+}</samp></pre>
+</div>
+<p>Note that individual samples in these results might be excluded from analysis for several reasons:</p>
+<ul>
+<li><code>valid_experiment</code> is <b>false</b>.  These samples were excluded during curation, a reason is given in <code>invalid_reason</code></li>
+<li><code>missing_reason</code> is present and has a value.  These samples failed QC, either at the sample level (specific metrics failed) or at the study level (at least 40% of samples in the study were excluded)</li>
+</ul>
+<h2>Viruses</h2>
+<p>VExD provides two services related to virus information: An alias resolution service and a lookup service</p>
+<h2>Alias Resolution</h2>
+<p>Either send a GET request to <code>{{ request.root_url }}api/v1/virus/alias/<var>alias</var></code> or a POST request to <code>{{ request.root_url }}api/v1/virus</code> (note the lack of a trailing slash) with a JSON body. If you use the GET interface, the alias must be URL encoded - in particular, ensure that spaces are replaced with <code>%20</code>. When using the POST interface, this is not necessary.</p>
+<h3>Example Calls</h3>
+<div class="rest">
+<code>curl {{ request.root_url }}api/v1/virus/alias/EMCV</code><br>
+<code>curl -H "Content-Type: application/json" -d '{"alias": "EMCV"}' {{ request.root_url }}api/v1/virus</code>
+</div>
+<h3>Example Result (from either endpoint)</h3>
+<div class="rest">
+<pre><samp>{
+  "alias": "EMCV", 
+  "results": [
+    "Cardiovirus A"
+  ]
+}</samp></pre>
+</div>
+<h2>Virus Information</h2>
+<p>Similarly, there are two endpoints to get the known taxonomic information for a virus. Either send a GET request to <code>{{ request.root_url }}api/v1/virus/name/<var>name</var></code> or a POST request to <code>{{ request.root_url }}api/v1/virus</code> (note the lack of a trailing slash) with a JSON body. As above, note that the GET interface only accepts URL encoded names.</p>
+<h3>Example Calls</h3>
+<div class="rest">
+<code>curl {{ request.root_url }}api/v1/virus/name/Cardiovirus%20A</code><br>
+<code>curl -H "Content-Type: application/json" -d '{"name": "Cardiovirus A"}' {{ request.root_url }}api/v1/virus</code>
+</div>
+<h3>Example Result (from either endpoint)</h3>
+<div class="rest">
+<pre><samp>{
+  "aliases": [
+    "EMCV-1", 
+    "Mengo virus", 
+    "Mengo encephalomyocarditis virus", 
+    "EMCV"
+  ], 
+  "baltimore": "IV", 
+  "family": "Picornaviridae", 
+  "genome_composition": "ssRNA(+)", 
+  "genus": "Cardiovirus", 
+  "host_types": [
+    "vertebrates"
+  ], 
+  "human_infecting": true, 
+  "name": "encephalomyocarditis virus 1", 
+  "order": "Picornavirales", 
+  "realm": "Riboviria", 
+  "species": "Cardiovirus A"
+}</samp></pre>
+</div>
+<h2>BTO Lookup</h2>
+<p>VExD does not maintain a complete copy of the Brenda Tissue Ontology.  We recommend using the <a href="https://www.ebi.ac.uk/ols/docs/api">EMBL Ontology Lookup Service API</a>.</p>
+<h3>Example Call</h3>
+<div class="rest">
+<code>curl https://www.ebi.ac.uk/ols/api/select?ontology=bto&q=blood</code>
+</div>
+<h3>Example Result (after pretty-printing)</h3>
+<div class="rest">
+<pre><samp>{
+    "responseHeader": {
+        "status": 0,
+        "QTime": 1,
+        "params": {
+            "hl": "true",
+            "fl": "iri,ontology_name,ontology_prefix,short_form,label,id,type,obo_id",
+            "start": "0",
+            "fq": [
+                "ontology_name: (bto)",
+                "is_obsolete:false"
+            ],
+            "rows": "10",
+            "hl.simple.pre": "&lt;b>",
+            "bq": "type:ontology^10.0 is_defining_ontology:true^100.0 label_s:\"blood\"^1000  label_autosuggest_e:\"blood\"^500 synonym_s:\"blood\" synonym_autosuggest_e:\"blood\"^100",
+            "q": "blood",
+            "defType": "edismax",
+            "hl.simple.post": "&lt;/b>",
+            "qf": "label synonym label_autosuggest_e label_autosuggest synonym_autosuggest_e synonym_autosuggest shortform_autosuggest iri",
+            "hl.fl": [
+                "label_autosuggest",
+                "label",
+                "synonym_autosuggest",
+                "synonym"
+            ],
+            "wt": "json"
+        }
+    },
+    "response": {
+        "numFound": 25,
+        "start": 0,
+        "docs": [
+            {
+                "id": "bto:class:http://purl.obolibrary.org/obo/BTO_0000089",
+                "iri": "http://purl.obolibrary.org/obo/BTO_0000089",
+                "short_form": "BTO_0000089",
+                "obo_id": "BTO:0000089",
+                "label": "blood",
+                "ontology_name": "bto",
+                "ontology_prefix": "BTO",
+                "type": "class"
+            },
+            {
+                "id": "bto:class:http://purl.obolibrary.org/obo/BTO_0006244",
+                "iri": "http://purl.obolibrary.org/obo/BTO_0006244",
+                "short_form": "BTO_0006244",
+                "obo_id": "BTO:0006244",
+                "label": "blood-brain barrier",
+                "ontology_name": "bto",
+                "ontology_prefix": "BTO",
+                "type": "class"
+            },
+            {
+                "id": "bto:class:http://purl.obolibrary.org/obo/BTO_0001102",
+                "iri": "http://purl.obolibrary.org/obo/BTO_0001102",
+                "short_form": "BTO_0001102",
+                "obo_id": "BTO:0001102",
+                "label": "blood vessel",
+                "ontology_name": "bto",
+                "ontology_prefix": "BTO",
+                "type": "class"
+            },
+            {
+                "id": "bto:class:http://purl.obolibrary.org/obo/BTO_0000580",
+                "iri": "http://purl.obolibrary.org/obo/BTO_0000580",
+                "short_form": "BTO_0000580",
+                "obo_id": "BTO:0000580",
+                "label": "blood cancer cell",
+                "ontology_name": "bto",
+                "ontology_prefix": "BTO",
+                "type": "class"
+            },
+            {
+                "id": "bto:class:http://purl.obolibrary.org/obo/BTO_0000679",
+                "iri": "http://purl.obolibrary.org/obo/BTO_0000679",
+                "short_form": "BTO_0000679",
+                "obo_id": "BTO:0000679",
+                "label": "blood-lymph",
+                "ontology_name": "bto",
+                "ontology_prefix": "BTO",
+                "type": "class"
+            },
+            {
+                "id": "bto:class:http://purl.obolibrary.org/obo/BTO_0000766",
+                "iri": "http://purl.obolibrary.org/obo/BTO_0000766",
+                "short_form": "BTO_0000766",
+                "obo_id": "BTO:0000766",
+                "label": "blood vessel endothelium",
+                "ontology_name": "bto",
+                "ontology_prefix": "BTO",
+                "type": "class"
+            },
+            {
+                "id": "bto:class:http://purl.obolibrary.org/obo/BTO_0004378",
+                "iri": "http://purl.obolibrary.org/obo/BTO_0004378",
+                "short_form": "BTO_0004378",
+                "obo_id": "BTO:0004378",
+                "label": "blood vessel wall",
+                "ontology_name": "bto",
+                "ontology_prefix": "BTO",
+                "type": "class"
+            },
+            {
+                "id": "bto:class:http://purl.obolibrary.org/obo/BTO_0000133",
+                "iri": "http://purl.obolibrary.org/obo/BTO_0000133",
+                "short_form": "BTO_0000133",
+                "obo_id": "BTO:0000133",
+                "label": "blood serum",
+                "ontology_name": "bto",
+                "ontology_prefix": "BTO",
+                "type": "class"
+            },
+            {
+                "id": "bto:class:http://purl.obolibrary.org/obo/BTO_0000132",
+                "iri": "http://purl.obolibrary.org/obo/BTO_0000132",
+                "short_form": "BTO_0000132",
+                "obo_id": "BTO:0000132",
+                "label": "blood platelet",
+                "ontology_name": "bto",
+                "ontology_prefix": "BTO",
+                "type": "class"
+            },
+            {
+                "id": "bto:class:http://purl.obolibrary.org/obo/BTO_0000131",
+                "iri": "http://purl.obolibrary.org/obo/BTO_0000131",
+                "short_form": "BTO_0000131",
+                "obo_id": "BTO:0000131",
+                "label": "blood plasma",
+                "ontology_name": "bto",
+                "ontology_prefix": "BTO",
+                "type": "class"
+            }
+        ]
+    },
+    "highlighting": {
+        "bto:class:http://purl.obolibrary.org/obo/BTO_0000089": {
+            "label_autosuggest": [
+                "&lt;b>blood&lt;/b>"
+            ],
+            "label": [
+                "&lt;b>blood&lt;/b>"
+            ]
+        },
+        "bto:class:http://purl.obolibrary.org/obo/BTO_0006244": {
+            "label_autosuggest": [
+                "&lt;b>blood-brain&lt;/b> barrier"
+            ],
+            "label": [
+                "&lt;b>blood&lt;/b>-brain barrier"
+            ]
+        },
+        "bto:class:http://purl.obolibrary.org/obo/BTO_0001102": {
+            "label_autosuggest": [
+                "&lt;b>blood&lt;/b> vessel"
+            ],
+            "label": [
+                "&lt;b>blood&lt;/b> vessel"
+            ]
+        },
+        "bto:class:http://purl.obolibrary.org/obo/BTO_0000580": {
+            "label_autosuggest": [
+                "&lt;b>blood&lt;/b> cancer cell"
+            ],
+            "label": [
+                "&lt;b>blood&lt;/b> cancer cell"
+            ]
+        },
+        "bto:class:http://purl.obolibrary.org/obo/BTO_0000679": {
+            "label_autosuggest": [
+                "&lt;b>blood-lymph&lt;/b>"
+            ],
+            "label": [
+                "&lt;b>blood&lt;/b>-lymph"
+            ]
+        },
+        "bto:class:http://purl.obolibrary.org/obo/BTO_0000766": {
+            "label_autosuggest": [
+                "&lt;b>blood&lt;/b> vessel endothelium"
+            ],
+            "label": [
+                "&lt;b>blood&lt;/b> vessel endothelium"
+            ]
+        },
+        "bto:class:http://purl.obolibrary.org/obo/BTO_0004378": {
+            "label_autosuggest": [
+                "&lt;b>blood&lt;/b> vessel wall"
+            ],
+            "label": [
+                "&lt;b>blood&lt;/b> vessel wall"
+            ]
+        },
+        "bto:class:http://purl.obolibrary.org/obo/BTO_0000133": {
+            "label_autosuggest": [
+                "&lt;b>blood&lt;/b> serum"
+            ],
+            "label": [
+                "&lt;b>blood&lt;/b> serum"
+            ]
+        },
+        "bto:class:http://purl.obolibrary.org/obo/BTO_0000132": {
+            "label_autosuggest": [
+                "&lt;b>blood&lt;/b> platelet"
+            ],
+            "label": [
+                "&lt;b>blood&lt;/b> platelet"
+            ]
+        },
+        "bto:class:http://purl.obolibrary.org/obo/BTO_0000131": {
+            "label_autosuggest": [
+                "&lt;b>blood&lt;/b> plasma"
+            ],
+            "label": [
+                "&lt;b>blood&lt;/b> plasma"
+            ]
+        }
+    }
+}</samp></pre>
+</div>
+<h2>Gene Lookup</h2>
+<p>VExD does not maintain an API for cross-referencing gene IDs.  We recommend using the <a href="https://rest.ensembl.org">Ensembl REST API</a>.</p>
+<h3>Example Call</h3>
+<div class="rest">
+<code>curl https://rest.ensembl.org/xrefs/symbol/homo_sapiens/IL6?content-type=application/json;external_db=HGNC</code>
+</div>
+<h3>Example Result (after pretty-printing)</h3>
+<div class="rest">
+<pre><samp>[
+    {
+        "type": "gene",
+        "id": "ENSG00000136244"
+    }
+]</samp></pre>
+</div>
+{% endblock %}
