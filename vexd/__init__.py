@@ -15,6 +15,7 @@ def create_app(test_config=None):
         MONGODB_PORT=27017,
         MONGODB_USER=None,
         MONGODB_PASS=None,
+        ALWAYS_REPORT_HTTPS=False,
     )
 
     if test_config is None:

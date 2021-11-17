@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, jsonify
+from flask import Blueprint, current_app, render_template, request
 from flask.helpers import make_response
 from webargs import fields, validate
 from webargs.flaskparser import use_kwargs
@@ -106,6 +106,8 @@ def methods():
 
 @bp.route('/api')
 def api_docs():
+    if current_app.config['ALWAYS_REPORT_HTTPS']:
+        request.scheme = 'https'
     return render_template('api_docs.html')
 
 @bp.route('/about')

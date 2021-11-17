@@ -708,7 +708,10 @@
 <p>Either send a GET request to <code>{{ request.root_url }}api/v1/virus/alias/<var>alias</var></code> or a POST request to <code>{{ request.root_url }}api/v1/virus</code> (note the lack of a trailing slash) with a JSON body. If you use the GET interface, the alias must be URL encoded - in particular, ensure that spaces are replaced with <code>%20</code>. When using the POST interface, this is not necessary.</p>
 <h3>Example Calls</h3>
 <div class="rest">
-<code>curl {{ request.root_url }}api/v1/virus/alias/EMCV</code><br>
+<code>curl {{ request.root_url }}api/v1/virus/alias/EMCV</code>
+</div>
+<br>
+<div class="rest">
 <code>curl -H "Content-Type: application/json" -d '{"alias": "EMCV"}' {{ request.root_url }}api/v1/virus</code>
 </div>
 <h3>Example Result (from either endpoint)</h3>
@@ -724,7 +727,10 @@
 <p>Similarly, there are two endpoints to get the known taxonomic information for a virus. Either send a GET request to <code>{{ request.root_url }}api/v1/virus/name/<var>name</var></code> or a POST request to <code>{{ request.root_url }}api/v1/virus</code> (note the lack of a trailing slash) with a JSON body. As above, note that the GET interface only accepts URL encoded names.</p>
 <h3>Example Calls</h3>
 <div class="rest">
-<code>curl {{ request.root_url }}api/v1/virus/name/Cardiovirus%20A</code><br>
+<code>curl {{ request.root_url }}api/v1/virus/name/Cardiovirus%20A</code>
+</div>
+<br>
+<div class="rest">
 <code>curl -H "Content-Type: application/json" -d '{"name": "Cardiovirus A"}' {{ request.root_url }}api/v1/virus</code>
 </div>
 <h3>Example Result (from either endpoint)</h3>
@@ -751,12 +757,12 @@
 }</samp></pre>
 </div>
 <h2>BTO Lookup</h2>
-<p>VExD does not maintain a complete copy of the Brenda Tissue Ontology.  We recommend using the <a href="https://www.ebi.ac.uk/ols/docs/api">EMBL Ontology Lookup Service API</a>.</p>
+<p>VExD does not maintain a complete copy of the Brenda Tissue Ontology.  We recommend using the <a href="https://www.ebi.ac.uk/ols/docs/api">EMBL Ontology Lookup Service API</a>.  The example call below searches for BTO terms matching <code>blood</code>.  The ranked results are in the <code>response.docs</code> array, and the <code>obo_id</code> element for the corresponding term can be used to search in VExD.</p>
 <h3>Example Call</h3>
 <div class="rest">
 <code>curl https://www.ebi.ac.uk/ols/api/select?ontology=bto&q=blood</code>
 </div>
-<h3>Example Result (after pretty-printing)</h3>
+<h3>Example Result</h3>
 <div class="rest">
 <pre><samp>{
     "responseHeader": {
@@ -982,7 +988,7 @@
 <div class="rest">
 <code>curl https://rest.ensembl.org/xrefs/symbol/homo_sapiens/IL6?content-type=application/json;external_db=HGNC</code>
 </div>
-<h3>Example Result (after pretty-printing)</h3>
+<h3>Example Result</h3>
 <div class="rest">
 <pre><samp>[
     {

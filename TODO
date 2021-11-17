@@ -11,3 +11,9 @@ Look for a journal home - find an article that's similar
 Try aggregating by cell type instead of virus
 Try scaling up-regulated and down-regulated genes separately rather than ranking all of them
 Consider only significant genes (set fold change to zero for non-significant)
+
+* Downloads:
+  * All differential expression results
+  * Results by virus
+  * List of DE genes
+  * All annotations
