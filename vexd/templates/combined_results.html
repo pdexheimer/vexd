@@ -93,7 +93,7 @@
                 {{ result_link(result.down|default(0), 'down', result) }}&nbsp;&#x2193;)
             {%- endif %}</td>
             <td>{% if valid_comp -%}
-                <a href="{{ url_for('ui.download_results', study=result.study, virus=result.virus, cell_type=result.bto_name, platform=result.platform, geneSet='all') }}">Full Results</a>
+                <a href="{{ url_for('ui.download_results', study=result.study, virus=result.virus, cell_type=result.bto_id, platform=result.platform, geneSet='all') }}">Full Results</a>
             {%- endif %}</td>
         </tr>
     {% endfor %}
