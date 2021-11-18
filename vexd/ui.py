@@ -106,8 +106,6 @@ def methods():
 
 @bp.route('/api')
 def api_docs():
-    if current_app.config['ALWAYS_REPORT_HTTPS']:
-        request.scheme = 'https'
     return render_template('api_docs.html')
 
 @bp.route('/about')

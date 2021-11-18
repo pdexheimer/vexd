@@ -1,6 +1,6 @@
 import os
 
-from flask import Flask
+from flask import Flask, request
 from markupsafe import Markup
 
 from . import api, geo, ui
@@ -38,6 +38,11 @@ def create_app(test_config=None):
     
     app.register_blueprint(api.bp)
     app.register_blueprint(ui.bp)
+
+    @app.before_request
+    def fake_https_if_asked():
+        if app.config['ALWAYS_REPORT_HTTPS']:
+            request.scheme = 'https'
 
     @app.template_filter('pluralize')
     def pluralize(word, count, plural_word=None):
