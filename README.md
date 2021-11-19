@@ -1,6 +1,6 @@
 # VExD -- the Virus Expression Database
 
-This project contains the source code for the VExD website.  It does not include any data or tools for creating the data.
+This project contains the source code for the [VExD website](https://vexd.cchmc.org).  It does not include any data or tools for creating the data.
 
 This site is written using the [Flask](https://palletsprojects.com/p/flask/) framework, which means that it can be run in any [WSGI](https://en.wikipedia.org/wiki/Web_Server_Gateway_Interface) environment.
 
@@ -15,7 +15,7 @@ This site is written using the [Flask](https://palletsprojects.com/p/flask/) fra
 Clone the repository and run the standard Python install (I **always** work in virtual environments):
 
 ```
-$ git clone https://tfinternal.research.cchmc.org/gitlab/weirauchlab/vexd/vexd.git
+$ git clone https://github.com/pdexheimer/vexd/vexd.git
 $ cd vexd
 $ python -mvenv env
 $ source env/bin/activate
@@ -26,7 +26,7 @@ $ pip install -e .
 
 VExD will parse a file in `instance/config.py` for runtime configuration.  The format of this file is just a series of `key = value` lines.  The most important variables are:
 
-* `SECRET_KEY` - Used [by Flask](https://flask.palletsprojects.com/en/2.0.x/config/?highlight=secret_key#SECRET_KEY) as a key for signing secure cookies and the like. If this is the only variable you need, you can generate the file by running `python -c 'import os; print("SECRET_KEY =", os.urandom(16))' > instance/config.py`.  Defaults to the key `dev`, **should be explicitly set in a production environment**.
+* `SECRET_KEY` - Used [by Flask](https://flask.palletsprojects.com/en/2.0.x/config/?highlight=secret_key#SECRET_KEY) as a key for signing secure cookies and the like. VExD doesn't use cookies, but it's still good practice to set this properly. If this is the only variable you need, you can generate the file by running `python -c 'import os; print("SECRET_KEY =", os.urandom(16))' > instance/config.py`.  Defaults to the key `dev`, **should be explicitly set in a production environment**.
 * `MONGODB_HOST`, `MONGODB_PORT` - The location of the mongo server, default to `localhost` and `27017`, respectively
 * `MONGODB_USER`, `MONGODB_PASS` - The credentials for the mongo server.  If not provided, no credentials are sent to mongo
 

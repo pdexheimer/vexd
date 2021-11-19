@@ -1,8 +1,0 @@
-{% extends "base.html" %}
-{% block title %}GEO Search{% endblock %}
-{% block body %}
-<form autocomplete="off" action="{{ url_for('ui.display_geo_entry') }}" method="GET">
-    <input type="text" id="searchbox" size="50" name="gse_id" placeholder="GEO Accession" autofocus/>
-    <input type="submit" value="Search" />
-</form>
-{% endblock %}

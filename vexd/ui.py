@@ -1,4 +1,4 @@
-from flask import Blueprint, current_app, render_template, request
+from flask import Blueprint, render_template
 from flask.helpers import make_response
 from webargs import fields, validate
 from webargs.flaskparser import use_kwargs
@@ -67,10 +67,6 @@ def gene_info_text(q):
     response.content_type = 'text/plain'
     return response
 
-# @bp.route('/geo_lookup')
-# def geo_lookup():
-#     return render_template('geo_search.html')
-
 @bp.route('/gene_lookup')
 def gene_search():
     return render_template('gene_search.html')
@@ -90,15 +86,6 @@ def download_results(virus, study, platform, cell_type, geneSet):
     response.headers.set('Content-disposition', 'attachment', filename="results.txt")
     response.content_type = 'text/plain'
     return response
-
-@bp.route('/heatmap')
-@use_kwargs({'q': fields.Str()}, location='query')
-def heatmap(q):
-    return render_template('morpheus.html', 
-        virus=q,
-        genes=geo().get_significant_genes_by_virus(virus_name=q),
-        studies=geo().get_studies_by_virus(q)
-    )
 
 @bp.route('/methods')
 def methods():

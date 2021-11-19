@@ -45,9 +45,9 @@ def virus_lookup(alias):
 @use_kwargs({'name': fields.Str(), 'alias': fields.Str()}, location='json')
 def meta_virus_lookup(**kwargs):
     if 'name' not in kwargs and 'alias' not in kwargs:
-        abort(400, "Must specify either 'name' or 'alias'")
+        abort(400, description="Must specify either 'name' or 'alias'")
     if 'name' in kwargs and 'alias' in kwargs:
-        abort(400, "Must specify one of 'name' or 'alias', not both")
+        abort(400, description="Must specify one of 'name' or 'alias', not both")
     if 'name' in kwargs:
         return virus_info(kwargs['name'])
     return virus_lookup(kwargs['alias'])
@@ -59,7 +59,7 @@ def geo_lookup(id):
     id = id.upper()
     result = geo().get_gse_info(id)
     if result is None:
-        abort(404, f'{id} has not been curated')
+        abort(404, description=f'{id} has not been curated')
     return result
 
 # Search Endpoints
