@@ -9,6 +9,7 @@ This site is written using the [Flask](https://palletsprojects.com/p/flask/) fra
 * An accessible Mongo database, with a collection called `vexd`.
 * Python 3.8+
 * The python packages Flask, marshmallow, webargs, and pymongo (these will be installed by pip).
+* Pip will also install the pandas and pyarrow packages, used for the create-downloads command
 
 ## Installing
 
@@ -19,7 +20,7 @@ $ git clone https://github.com/pdexheimer/vexd/vexd.git
 $ cd vexd
 $ python -mvenv env
 $ source env/bin/activate
-$ pip install -e .
+(env) $ pip install -e .
 ```
 
 ## Configuring
@@ -27,14 +28,35 @@ $ pip install -e .
 VExD will parse a file in `instance/config.py` for runtime configuration.  The format of this file is just a series of `key = value` lines.  The most important variables are:
 
 * `SECRET_KEY` - Used [by Flask](https://flask.palletsprojects.com/en/2.0.x/config/?highlight=secret_key#SECRET_KEY) as a key for signing secure cookies and the like. VExD doesn't use cookies, but it's still good practice to set this properly. If this is the only variable you need, you can generate the file by running `python -c 'import os; print("SECRET_KEY =", os.urandom(16))' > instance/config.py`.  Defaults to the key `dev`, **should be explicitly set in a production environment**.
+* `ALWAYS_REPORT_HTTPS` - If True, VExD will display addresses on the API page with the https scheme, regardless of what the web server thinks the correct scheme should be.  Helpful if there's a gateway in front of the web site.  Defaults to False
+* `DOWNLOAD_DIRECTORY` - Where should VExD look for the statically created files on the Downloads page?  Defaults to `instance/downloads`
 * `MONGODB_HOST`, `MONGODB_PORT` - The location of the mongo server, default to `localhost` and `27017`, respectively
 * `MONGODB_USER`, `MONGODB_PASS` - The credentials for the mongo server.  If not provided, no credentials are sent to mongo
 
 Any other [Flask configuration variable](https://flask.palletsprojects.com/en/2.0.x/config/?highlight=secret_key#builtin-configuration-values) can be set, though no others have been tested.
 
+## Creating static downloads
+
+Once VExD has been installed and configured (including the database) **and any time the database changes** be sure to (re-)generate the static database dumps available on the Downloads page.  This can be done from the vexd source directory:
+
+```
+$ source env/bin/activate     # If necessary
+(env) $ flask create-downloads
+```
+
 ## Running
 
-In a development environment, it is easiest to execute the included [run.sh](run.sh) script.  This starts a Flask server in development mode, running on http://localhost:5000.
+### Development
+
+In a development environment, it is easiest to [directly run a Flask server](https://flask.palletsprojects.com/en/2.0.x/server/) on http://localhost:5000.
+
+```
+$ source env/bin/activate                     # If necessary
+(env) $ echo "FLASK_ENV = development" > .env # Only needs to be done once
+(env) $ flask run
+```
+
+### Production
 
 In a production environment, any WSGI container should work.  I have only used Apache and [mod_wsgi](https://modwsgi.readthedocs.io/en/master/).  Be sure to read the documentation for both of those programs thoroughly, as there are a number of options and security concerns!  However, the key steps are to:
 

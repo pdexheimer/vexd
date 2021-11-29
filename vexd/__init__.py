@@ -3,7 +3,7 @@ import os
 from flask import Flask, request
 from markupsafe import Markup
 
-from . import api, geo, ui
+from . import api, commands, geo, ui
 
 
 def create_app(test_config=None):
@@ -16,6 +16,7 @@ def create_app(test_config=None):
         MONGODB_USER=None,
         MONGODB_PASS=None,
         ALWAYS_REPORT_HTTPS=False,
+        DOWNLOAD_DIRECTORY=os.path.join(app.instance_path, 'downloads')
     )
 
     if test_config is None:
@@ -35,9 +36,17 @@ def create_app(test_config=None):
         os.makedirs(app.instance_path)
     except OSError:
         pass
+    try:
+        os.makedirs(app.config['DOWNLOAD_DIRECTORY'])
+    except OSError:
+        pass
     
     app.register_blueprint(api.bp)
     app.register_blueprint(ui.bp)
+
+    @app.cli.command('create-downloads')
+    def create_downloads():
+        commands.prepare_db_dumps(app.config['DOWNLOAD_DIRECTORY'])
 
     @app.before_request
     def fake_https_if_asked():
