@@ -60,7 +60,7 @@ _analysis_aggregation = [
                 'bto_id': '$samples.bto_id'
             }, 
             'total_samples': {'$sum': 1}, 
-            'pf_samples': {'$sum': {'$cond': [{'$eq': [{'$type': '$samples.missing_reason'}, 'missing']}, 1, 0]}}, 
+            'usable_samples': {'$sum': {'$cond': [{'$eq': [{'$type': '$samples.missing_reason'}, 'missing']}, 1, 0]}}, 
             'cell_type': {'$first': '$samples.cell_type'}
         }
     }, {
@@ -93,7 +93,7 @@ _analysis_aggregation = [
                     '$group': {
                         '_id': None, 
                         'total_controls': {'$sum': 1}, 
-                        'pf_controls': {'$sum': {'$cond': [{'$eq': [{'$type': '$missing_reason'}, 'missing']}, 1, 0]}}
+                        'usable_controls': {'$sum': {'$cond': [{'$eq': [{'$type': '$missing_reason'}, 'missing']}, 1, 0]}}
                     }
                 }
             ]
@@ -158,7 +158,7 @@ _analysis_aggregation = [
                     {'$arrayElemAt': ['$geo', 0]}, 
                     {'$arrayElemAt': ['$controls', 0]}, 
                     {
-                        'pf_samples': '$pf_samples', 
+                        'usable_samples': '$usable_samples', 
                         'total_samples': '$total_samples', 
                         'cell_type': '$cell_type'
                     }
@@ -168,8 +168,8 @@ _analysis_aggregation = [
     }, {
         '$set': {
             'enough_samples': {'$and': [
-                    {'$gte': ['$pf_samples', 2]}, 
-                    {'$gte': ['$pf_controls', 2]}
+                    {'$gte': ['$usable_samples', 2]}, 
+                    {'$gte': ['$usable_controls', 2]}
             ]}, 
             'study_order': {'$toInt': {'$ltrim': {'input': '$study', 'chars': 'GSE'}}}
         }

@@ -245,28 +245,28 @@ class GeoSearch:
                         {'$arrayElemAt': ['$gene_count', 0]},
                         {'$arrayElemAt': ['$geo', 0]},
                         {
-                            'pf_samples': {
+                            'usable_samples': {
                                 '$filter': {
                                     'input': '$samples',
                                     'cond': {'$eq': [{'$type': '$$this.missing_reason'}, 'missing']}
                                 }
                             },
-                            'samples': '$samples',
-                            'pf_controls': {
+                            'total_samples': '$samples',
+                            'usable_controls': {
                                 '$filter': {
                                     'input': '$controls',
                                     'cond': {'$eq': [{'$type': '$$this.missing_reason'}, 'missing']}
                                 }
                             },
-                            'controls': '$controls',
+                            'total_controls': '$controls',
                             'missing_sample_reasons': '$missing_sample_reasons',
                             'missing_control_reasons': '$missing_control_reasons',
                             'cell_type': '$cell_type'
                 } ] } }},
             { '$set': {
                     'enough_samples': { '$and': [
-                        { '$gte': [{'$size': '$pf_samples'}, 2] },
-                        { '$gte': [{'$size': '$pf_controls'}, 2] }
+                        { '$gte': [{'$size': '$usable_samples'}, 2] },
+                        { '$gte': [{'$size': '$usable_controls'}, 2] }
                     ] },
                     'study_order': { '$toInt': { '$ltrim': {
                         'input': '$study',

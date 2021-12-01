@@ -76,15 +76,15 @@
         </tr>
     </thead>
     <tbody>
-    {% for result in search_results %}{% set valid_comp = result.pf_samples|length >= 2 and result.pf_controls|length >= 2 %}
+    {% for result in search_results %}{% set valid_comp = result.usable_samples|length >= 2 and result.usable_controls|length >= 2 %}
         <tr>
             <td><span class="geo_id"><a href="{{ url_for('ui.display_geo_entry', gse_id=result.study) }}">{{ result.study }}</a></span><br>
             <i>{{ result.virus }}</i><br>
             {{ cell_type(result) }}<br>
             {{ platform(result.platform) }}</td>
             <td style="max-width: 30%; width: 30%">{{ result.title }}</td>
-            <td>Virus: {{ filtered_count(result.samples|length, result.pf_samples|length, result.missing_sample_reasons) }}<br>
-            Control: {{ filtered_count(result.controls|length, result.pf_controls|length, result.missing_control_reasons) }}</td>
+            <td>Virus: {{ filtered_count(result.total_samples|length, result.usable_samples|length, result.missing_sample_reasons) }}<br>
+            Control: {{ filtered_count(result.total_controls|length, result.usable_controls|length, result.missing_control_reasons) }}</td>
             <td><span class="geo_id">{% if valid_comp -%}
                 {{ result_link(result.signif|default(0), 'sig', result) }}
             {%- else %}--{% endif %}</span>
