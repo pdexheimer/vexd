@@ -213,7 +213,7 @@ def prepare_db_dumps(directory):
                 'virus': [comp['virus'],]*2,
                 'bto_id': [comp['bto_id'],]*2,
                 'bto_name': [comp['bto_name'],]*2,
-                'platform': [comp.get('platform', ''),]*2,
+                'platform': [comp.get('platform', 'RNA-seq'),]*2,
                 'data': ['log_fc', 'adj_p'],
             }))
         )

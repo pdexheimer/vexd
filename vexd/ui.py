@@ -1,8 +1,9 @@
-from flask import Blueprint, render_template
+from flask import Blueprint, current_app, render_template, send_from_directory
 from flask.helpers import make_response
 from webargs import fields, validate
 from webargs.flaskparser import use_kwargs
 from .geo import geo
+from .utils import parse_dl_files
 
 bp = Blueprint('ui', __name__, url_prefix='/')
 
@@ -90,6 +91,21 @@ def download_results(virus, study, platform, cell_type, geneSet):
 @bp.route('/methods')
 def methods():
     return render_template('methods.html')
+
+@bp.route('/downloads')
+def download_page():
+    return render_template('downloads.html', 
+        file_info=parse_dl_files(current_app.config['DOWNLOAD_DIRECTORY'])
+    )
+
+@bp.route('/download/<filename>')
+@use_kwargs({'filename': fields.Str()}, location='view_args')
+def download_file(filename):
+    return send_from_directory(
+        current_app.config['DOWNLOAD_DIRECTORY'],
+        filename,
+        as_attachment=True
+    )
 
 @bp.route('/api')
 def api_docs():
