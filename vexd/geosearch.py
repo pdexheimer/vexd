@@ -294,7 +294,7 @@ class GeoSearch:
         ])
         return result.next()['results']
 
-    def get_analysis_results(self, study, virus, cell_type, platform, geneSet):
+    def get_analysis_results(self, study, virus, cell_type, platform, geneSet, num_genes=None):
         initial_match = {
             'study': study,
             'virus': virus,
@@ -313,7 +313,7 @@ class GeoSearch:
             initial_match['logfc'] = {'$gte': 1}
         elif geneSet == 'down':
             initial_match['logfc'] = {'$lte': -1}
-        result = self.results.aggregate([
+        pipeline = [
             { '$match': initial_match },
             { '$lookup': {
                 'from': 'genes',
@@ -326,9 +326,12 @@ class GeoSearch:
                 { '$arrayElemAt': ['$symbol', 0] }
             ]}}},
             { '$set': { 'symbol': '$symbol.symbol' } },
-            { '$project': { '_id': 0 } }
-        ])
-        return list(result)
+        ]
+        if num_genes is not None:
+            pipeline.append({ '$sort': {'adj_p': 1, '_id': 1} })
+            pipeline.append({ '$limit': num_genes })
+        pipeline.append({ '$project': { '_id': 0 } })
+        return list(self.results.aggregate(pipeline))
     
     def num_studies(self):
         return list(self.geo.aggregate([

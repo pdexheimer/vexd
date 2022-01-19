@@ -1,47 +1,54 @@
 {% extends "base.html" %}
 {% from "utils.html" import cell_type, uber_search_head, uber_search_body %}
 {% block title %}VExD - Results{% endblock %}
+
 {%- macro filtered_count(total, pf, reasons) -%}
 {% if total == pf %}{{ pf }}{% else -%}
 {% set line_break=joiner("<br>"|safe) %}
 <span style="text-decoration-line: line-through">{{ total }}</span> {{ pf }}
-<span class="tooltip">&#x26A0;
+<span class="warning tooltip">&#x26A0;
     <span class="tooltiptext">{% for el in reasons if el._id is not none %}{{ line_break() }}{{ el._id }}: {{ el.count }}{% endfor %}</span>
 </span>
 {%- endif %}
 {%- endmacro -%}
+
 {%- macro result_link(count, geneSet, result) -%}
 {%- if count > 0 -%}
-<a href="{{ url_for('ui.download_results', study=result.study, virus=result.virus, cell_type=result.bto_id, platform=result.platform, geneSet=geneSet) }}">
+<span class="tooltip">
+<a href="{{ url_for('ui.download_results', study=result.study, virus=result.virus, cell_type=result.bto_id, platform=result.platform, geneSet=geneSet) }}" class="previewable" vexd_study="{{result.study}}" vexd_virus="{{result.virus}}" vexd_cell_type="{{result.bto_id}}" vexd_platform="{{result.platform}}" vexd_geneSet="{{geneSet}}">
 {%- endif -%}
-{{ count }}{{ "</a>"|safe if count > 0 }}
+{{ count }}{{ "</a><span class='tooltiptext'></span></span>"|safe if count > 0 }}
 {%- endmacro -%}
+
 {%- macro platform(name) -%}
 {%- if name is defined %}<img class="geo_icon" src="{{ url_for('static', filename='array.png') }}"/> <abbr title="Array type">{{ name }}</abbr>
 {%- else %}<img class="geo_icon" src="{{ url_for('static', filename='rnaseq.png') }}"/> RNA-seq{% endif %}
 {%- endmacro -%}
+
 {% block head %}
     {{ super() }}
     {{ uber_search_head(virus, tissue) }}
     <style>
         .tooltip {
             position: relative;
+        }
+        .warning {
             background-color: yellow;
             cursor: default;
         }
         .tooltip .tooltiptext {
             visibility: hidden;
-            width: 16em;
+            width: 20em;
             background-color: black;
             color: white;
-            font-size: smaller;
+            font-size: small;
             text-align: center;
             padding: 5px 0;
             border-radius: 6px;
             position: absolute;
             bottom: 100%;
             left: 50%;
-            margin-left: -8em;
+            margin-left: -10em;
             z-index: 1;
         }
         .tooltip:hover .tooltiptext { visibility: visible; }
@@ -56,7 +63,74 @@
             border-color: black transparent transparent transparent;
         }
         abbr { cursor: help; }
+        .tooltiptext table {
+            margin: 0.7em auto;
+        }
+        .tooltiptext table tr {
+            background-color: black;
+        }
     </style>
+    <script>
+        window.addEventListener("DOMContentLoaded", () => {
+            document.querySelectorAll("a.previewable").forEach(link => {
+                link.addEventListener("mouseover", () => {
+                    if (!("fetched" in link)) {
+                        const link_url = new URL(link.href);
+                        const searchParams = new URLSearchParams({
+                            'virus': link_url.searchParams.get('virus'),
+                            'study': link_url.searchParams.get('study'),
+                            'cell_type': link_url.searchParams.get('cell_type'),
+                            'platform': link_url.searchParams.get('platform'),
+                        });
+                        const preview_url = new URL("{{ url_for('api.analysis_preview', geneSet='sig', _external=True) }}");
+                        const geneSet = link.getAttribute("vexd_geneset");
+                        if (geneSet != "sig") {
+                            preview_url.pathname = preview_url.pathname.replace('/sig', '/'+geneSet);
+                        }
+                        preview_url.search = '?' + searchParams.toString();
+                        fetch(preview_url)
+                            .then(response => response.json())
+                            .then(data => {
+                                link.fetched = true;
+                                const panel = link.nextElementSibling;
+                                while (panel.hasChildNodes())
+                                    panel.removeChild(panel.firstChild);
+                                const span = document.createElement('span');
+                                span.innerHTML = 'Top ';
+                                switch (geneSet) {
+                                    case 'sig': span.innerHTML += 'Significant '; break;
+                                    case 'up': span.innerHTML += 'Upregulated '; break;
+                                    case 'down': span.innerHTML += 'Downregulated '; break;
+                                }
+                                span.innerHTML += 'genes by p-value';
+                                span.style.fontSize = 'larger';
+                                panel.appendChild(span);
+                                panel.appendChild(document.createElement('br'));
+                                const table = document.createElement('table');
+                                for (gene of data) {
+                                    const tr = document.createElement('tr');
+                                    let td = document.createElement('td');
+                                    td.innerHTML = gene['symbol'];
+                                    tr.appendChild(td);
+                                    td = document.createElement('td');
+                                    if (gene['logfc'] > 0) {
+                                        td.innerHTML = Math.round(1000*gene['fc'])/1000 + "&nbsp;&#x2191;";
+                                    } else {
+                                        td.innerHTML = Math.round(1000/gene['fc'])/1000 + "&nbsp;&#x2193;";
+                                    }
+                                    tr.appendChild(td);
+                                    td = document.createElement('td');
+                                    td.innerHTML = Number.parseFloat(gene['adj_p']).toPrecision(3);
+                                    tr.appendChild(td);
+                                    table.appendChild(tr);
+                                }
+                                panel.appendChild(table);
+                            });
+                    }
+                });
+            });
+        });
+    </script>
 {% endblock %}
 {% block body %}
 {{ uber_search_body(search_kids) }}
@@ -71,7 +145,7 @@
             <th>Study</th>
             <th>Title</th>
             <th>Analyzed Samples</th>
-            <th>Significant Genes</th>
+            <th>Significant Genes<br><span style="font-size: smaller">(Hover for Preview)<span></th>
             <th></th>
         </tr>
     </thead>
@@ -82,7 +156,7 @@
             <i>{{ result.virus }}</i><br>
             {{ cell_type(result) }}<br>
             {{ platform(result.platform) }}</td>
-            <td style="max-width: 30%; width: 30%">{{ result.title }}</td>
+            <td style="max-width: 25%; width: 25%">{{ result.title }}</td>
             <td>Virus: {{ filtered_count(result.total_samples|length, result.usable_samples|length, result.missing_sample_reasons) }}<br>
             Control: {{ filtered_count(result.total_controls|length, result.usable_controls|length, result.missing_control_reasons) }}</td>
             <td><span class="geo_id">{% if valid_comp -%}

@@ -4,7 +4,7 @@ body {
 
 header {
     display: grid;
-    grid-template-columns: 9em auto 15em;
+    grid-template-columns: 9em auto 16em;
     grid-template-rows: 6.5em 3.5em;
     grid-gap: 0
 }
@@ -106,10 +106,10 @@ td,th {
     font-style: italic;
 }
 
-.gse_list tbody tr:nth-child(even) {
+.gse_list>tbody>tr:nth-child(even) {
     background-color: #ccc;
 }
-.gse_list tbody tr:nth-child(odd) {
+.gse_list>tbody>tr:nth-child(odd) {
     background-color: mintcream;
 }
 .gse_list td,th {

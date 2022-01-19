@@ -25,6 +25,21 @@ def virus_typeahead(text):
 def gene_typeahead(text):
     return jsonify(geo().find_gene_by_prefix(text))
 
+# Other endpoints used for dynamical web-ness
+# Not part of the public API
+
+result_args = {
+    'virus': fields.Str(),
+    'study': fields.Str(),
+    'platform': fields.Str(),
+    'cell_type': fields.Str()
+}
+@bp.route('/preview/<geneSet>')
+@use_kwargs({'geneSet': fields.Str(validate=validate.OneOf(['sig','up','down']))}, location='view_args')
+@use_kwargs(result_args, location='query')
+def analysis_preview(virus, study, platform, cell_type, geneSet):
+    return jsonify(geo().get_analysis_results(study, virus, cell_type, platform, geneSet, 10))
+
 # Virus Endpoints
 
 @bp.route('/v1/virus/name/<name>')
