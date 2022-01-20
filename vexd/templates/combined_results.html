@@ -82,7 +82,7 @@
                             'cell_type': link_url.searchParams.get('cell_type'),
                             'platform': link_url.searchParams.get('platform'),
                         });
-                        const preview_url = new URL("{{ url_for('api.analysis_preview', geneSet='sig', _external=True) }}");
+                        const preview_url = new URL("{{ url_for('api.analysis_preview', geneSet='sig') }}", "{{ request.root_url }}");
                         const geneSet = link.getAttribute("vexd_geneset");
                         if (geneSet != "sig") {
                             preview_url.pathname = preview_url.pathname.replace('/sig', '/'+geneSet);
