@@ -4,11 +4,22 @@
 {% block head %}
 {{ super() }}
 {{ gene_search_head(false, gene.ensembl_id) }}
+<script>
+window.addEventListener('DOMContentLoaded', () => {
+    fetch("{{ url_for('ui.gene_boxplot', q=gene.ensembl_id) }}")
+    .then(response => response.blob())
+    .then(imageblob => {
+        img = document.getElementById("boxplot");
+        img.src = URL.createObjectURL(imageblob);
+        img.addEventListener('load', () => URL.revokeObjectURL(this.src));
+    });
+});
+</script>
 {% endblock %}
 {% block body %}
-<div style="float: right; margin-right: 1.5em">
-    {{ gene_search_body(false) }}
-</div>
+{{ gene_search_body(true, false) }}<br>
+<div style="display: grid; grid-template-columns: 48% 48%; gap: 4%">
+<div>
 <h1>{{ gene.symbol }}</h1>
 <h2>{{ gene.description|default("No Description") }}</h2>
 <p><b>Ensembl ID:</b> <a href="https://ensembl.org/Homo_sapiens/Gene/Summary?db=core;g={{ gene.ensembl_id }}" target="_blank">{{ gene.ensembl_id }}</a></p>
@@ -16,6 +27,11 @@
 <p><b>Entrez ID:</b> {% set commify=joiner(", ") %}{% for entrez in gene.entrez %}{{ commify() }}<a href="https://www.ncbi.nlm.nih.gov/gene/{{ entrez }}" target="_blank">{{ entrez }}</a>{% else %}<i>None listed</i>{% endfor %}</p>
 <p><b>Aliases:</b> {% set commify=joiner(", ") %}{% for alias in gene.alias %}{{ commify() }} {{ alias }}{% else %}<i>None listed</i>{% endfor %}</p>
 <p><a href="{{ url_for('ui.gene_info_text', q=gene.ensembl_id) }}">Download table as text</a></p>
+</div>
+<a href="{{ url_for('ui.gene_boxplot', q=gene.ensembl_id) }}">
+<img src="" alt="Loading boxplot..." style="width: 100%" id="boxplot">
+</a>
+</div>
 <table class="gse_list">
     <thead>
         <tr>
