@@ -3,6 +3,7 @@ from flask.helpers import make_response
 from webargs import fields, validate
 from webargs.flaskparser import use_kwargs
 from .geo import geo
+from . import plot
 from .utils import parse_dl_files
 
 bp = Blueprint('ui', __name__, url_prefix='/')
@@ -54,6 +55,18 @@ def display_geo_entry(gse_id):
 @use_kwargs({'q': fields.Str()}, location='query')
 def display_gene_info(q):
     return render_template('gene.html', gene=geo().get_gene_info(q), gene_results=geo().get_results_by_gene(q))
+
+@bp.route('/gene_plot')
+@use_kwargs({'q': fields.Str()}, location='query')
+def gene_boxplot(q):
+    response = make_response(
+        plot.gene_boxplot(
+            geo().get_gene_info(q),
+            geo().get_results_by_gene(q)
+        )
+    )
+    response.content_type = 'image/png'
+    return response
 
 @bp.route('/gene/txt')
 @use_kwargs({'q': fields.Str()}, location='query')

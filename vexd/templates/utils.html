@@ -314,16 +314,16 @@ target="_blank"><img src="{{ url_for('static', filename='ols.png') }}" class="ge
 </script>
 {%- endmacro -%}
 
-{%- macro gene_search_body(show_help=true) -%}
+{%- macro gene_search_body(compact=false, show_help=true) -%}
 <form autocomplete="off" action="{{ url_for('ui.display_gene_info') }}" method="GET">
     <div id="filtercontainer">
         <div id="filters">
-            <h3>Search for gene</h3>
+            {%- if not compact %}<h3>Search for gene</h3>{% endif -%}
             <div class="autocomplete">
-                <input type="text" id="gene_search" class="searchbox" 
+                <input type="text" id="gene_search" class="searchbox" spellcheck="false"
                 size="40" name="q" placeholder="Gene symbol/ID" autofocus/>
-            </div><br>
-            <br>
+            </div>
+            {%- if compact %}&nbsp;{% else %}<br><br>{% endif -%}
             <input type="submit" value="Search" />
         </div>
         {%- if show_help %}

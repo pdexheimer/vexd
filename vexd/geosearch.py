@@ -82,7 +82,26 @@ class GeoSearch:
         return list(self.genes.find(search_expr, projection=self.no_id, limit=100))
 
     def get_results_by_gene(self, ensembl_id):
-        return list(self.results.find({'ensembl_id': ensembl_id.upper()}, projection=self.no_id, sort=[('adj_p', 1)]))
+        result = self.results.aggregate([
+            { '$match': { 'ensembl_id': ensembl_id.upper() } },
+            { '$lookup': { 
+                'from': 'viruses', 
+                'localField': 'virus', 
+                'foreignField': 'species',
+                'as': 'virus_info',
+            }},
+            { '$addFields': {
+                'virus_genome': {'$first': '$virus_info.genome_composition'},
+                'virus_baltimore': { '$first': '$virus_info.baltimore' },
+            }},
+            { '$project': {
+                '_id': 0,
+                'virus_info': 0,
+            }},
+            { '$sort': { 'adj_p': 1 }},
+        ])
+        return list(result)
+        #return list(self.results.find({'ensembl_id': ensembl_id.upper()}, projection=self.no_id, sort=[('adj_p', 1)]))
 
     def search_studies(self, virus_name, tissue, use_descendants, pval_cutoff=0.05, logfc_cutoff=1):
         #  1) match: Restrict to only studies of interest
