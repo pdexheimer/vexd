@@ -5,6 +5,7 @@ from matplotlib.colors import BoundaryNorm
 from matplotlib.figure import Figure
 import pandas as pd
 import numpy as np
+from scipy.stats import gaussian_kde
 import io
 import roman
 
@@ -31,7 +32,7 @@ def gene_boxplot(gene, gene_results):
     
     # Main figure creation and plotting
     fig = Figure(figsize=(13, 8), layout="constrained")
-    ax = fig.add_subplot()
+    ax = fig.add_subplot(10, 1, (2,10)) # Bottom 90%
     bplot = ax.boxplot(
         data,
         labels=labels,
@@ -66,6 +67,7 @@ def gene_boxplot(gene, gene_results):
     max_extent = max([abs(x) for x in ax.get_xlim()])
     ax.set_xlim(-max_extent, max_extent)
     ax.spines.top.set_visible(False)
+    ax.spines.right.set_visible(False)
     ax.invert_yaxis()
     # Hide the tick marks on the y axis
     for tick in ax.yaxis.get_major_ticks():
@@ -81,6 +83,13 @@ def gene_boxplot(gene, gene_results):
     # Title and colorbar
     fig.suptitle(f"{gene['symbol']} ({gene['ensembl_id']})", fontsize="x-large")
     add_colorbar(fig, class_bounds, results['virus_genome'].drop_duplicates().to_list())
+    # Density plot of all points
+    upper_ax = fig.add_subplot(10, 1, 1, sharex=ax, frame_on=False)
+    density = gaussian_kde(results['logfc'].to_numpy())
+    density.set_bandwidth(density.factor / 4.)
+    density_x = np.linspace(ax.get_xlim()[0], ax.get_xlim()[1], 200)
+    upper_ax.fill_between(density_x, density(density_x), facecolor='cadetblue')
+    upper_ax.set_axis_off()
     # Finally, write out the PNG and return
     buffer = io.BytesIO()
     fig.savefig(buffer)
