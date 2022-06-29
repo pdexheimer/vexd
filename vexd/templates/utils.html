@@ -231,46 +231,43 @@ target="_blank"><img src="{{ url_for('static', filename='ols.png') }}" class="ge
 <link rel="stylesheet" href="{{ url_for('static', filename='autocomplete.css') }}" />
 <script src="{{ url_for('static', filename='autocomplete.js') }}"></script>
 <script>
+    function highlightPerfectMatch(needle, primaryName, aliases) {
+        needle = needle.toUpperCase();
+        if (needle == primaryName.toUpperCase())
+            return "<strong>"+primaryName+"</strong>";
+        for (const name of aliases) {
+            if (needle == name.toUpperCase())
+                return primaryName + " (<strong>" + name + "</strong>)";
+        }
+        return null;
+    }
+    function highlightPartialMatch(needle, primaryName, aliases) {
+        needle = needle.toUpperCase();
+        var pos = primaryName.toUpperCase().indexOf(needle);
+        if (pos !== -1)
+            return primaryName.substring(0, pos) +
+                "<strong>" + primaryName.substring(pos, pos+needle.length) + "</strong>" +
+                primaryName.substring(pos+needle.length)
+        for (const name of aliases) {
+            pos = name.toUpperCase().indexOf(needle);
+            if (pos !== -1)
+                return primaryName +
+                    " (" + name.substring(0, pos) +
+                    "<strong>" + name.substring(pos, pos+needle.length) + "</strong>" +
+                    name.substring(pos+needle.length) + ")"
+        }
+        return null;
+    }
     window.addEventListener("load", () => init_autocomplete(
         document.getElementById("gene_search"),
         "{{ url_for('api.gene_typeahead', text='') }}",
         function(result, text) {
-            var symbol = result['symbol'];
-            output = "";
-            if (text.toUpperCase() == symbol.substr(0, text.length).toUpperCase()) {
-                output += "<strong>"+symbol.substr(0, text.length)+"</strong>";
-                output += symbol.substr(text.length);
-            } else {
-                output += symbol;
-                var foundAlias = false;
-                if (text.toUpperCase() == result['ensembl_id'].substr(0, text.length).toUpperCase()) {
-                    foundAlias = true;
-                    output += " (<strong>"+result['ensembl_id'].substr(0, text.length)+"</strong>";
-                    output += result['ensembl_id'].substr(text.length)+")";
-                }
-                if (!foundAlias) {
-                    for (var i=0; i<result['alias'].length; i++) {
-                        var name = result['alias'][i];
-                        if (text.toUpperCase() == name.substr(0, text.length).toUpperCase()) {
-                            foundAlias = true;
-                            output += " (<strong>"+name.substr(0, text.length)+"</strong>";
-                            output += name.substr(text.length)+")";
-                            break;
-                        }
-                    }
-                }
-                if (!foundAlias) {
-                    for (var i=0; i<result['refseq'].length; i++) {
-                        var name = result['refseq'][i];
-                        if (text.toUpperCase() == name.substr(0, text.length).toUpperCase()) {
-                            foundAlias = true;
-                            output += " (<strong>"+name.substr(0, text.length)+"</strong>";
-                            output += name.substr(text.length)+")";
-                            break;
-                        }
-                    }
-                }
-            }
+            const aliases = result['alias'].concat([result['ensembl_id']]).concat(result['refseq']);
+            var output = highlightPerfectMatch(text, result['symbol'], aliases);
+            if (output === null)
+                output = highlightPartialMatch(text, result['symbol'], aliases);
+            if (output === null)
+                output = result['symbol']
             return output+"<input type='hidden' value='" + result['ensembl_id'] + "'>";
         }
     ));
@@ -299,7 +296,7 @@ target="_blank"><img src="{{ url_for('static', filename='ols.png') }}" class="ge
         h5.innerHTML = "Gene Symbol/ID";
         el.appendChild(h5);
         var p = document.createElement("p");
-        p.innerHTML = "Enter a gene symbol (&quot;ISG15&quot;), alias (&quot;UCRP&quot;), or Ensembl Gene ID (&quot;ENSG00000187608&quot;).";
+        p.innerHTML = "Enter a gene symbol (&quot;ISG15&quot;), alias (&quot;UCRP&quot;), Ensembl Gene ID (&quot;ENSG00000187608&quot;), or RefSeq ID (&quot;NM_005101&quot;).";
         el.appendChild(p);
     }
     function showHelp(forElement=document.activeElement) {

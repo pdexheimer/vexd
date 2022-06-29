@@ -8,7 +8,7 @@ This site is written using the [Flask](https://palletsprojects.com/p/flask/) fra
 
 * An accessible Mongo database, with a collection called `vexd`.
 * Python 3.8+
-* The python packages Flask, marshmallow, webargs, and pymongo (these will be installed by pip).
+* The python packages Flask, marshmallow, webargs, pymongo, matplotlib, and roman (these will be installed by pip).
 * Pip will also install the pandas and pyarrow packages, used for the create-downloads command
 
 ## Installing
@@ -78,3 +78,13 @@ In a production environment, any WSGI container should work.  I have only used A
 The `WSGIScriptAlias` directive can also be used to serve VExD out of a subdirectory.  The `python-home` element of the `WSGIDaemonProcess` directive points to the virtual environment where VExD was installed.  With this configuration, you can update a running server by simply running `touch /var/www/wsgi/vexd.wsgi`, as opposed to reloading the entire Apache server.
 
 These Apache directives are not sufficient by themselves (you still need to allow the server to access the `/var/www/wsgi` directory, for instance), but they are the core of the configuration.
+
+## Javascript Libraries
+
+VExD makes use of several open-source Javascript libraries, all of which are included in the `static` directory:
+
+* [OLS autocomplete](https://www.npmjs.com/package/ols-autocomplete), from the [Ontology Lookup Search](https://www.ebi.ac.uk/ols/) at EBI.  Used for the BTO term lookup
+* [OLS treeview](https://www.npmjs.com/package/ols-treeview), also from OLS.  Used to display the BTO hierarchy
+* [Sortable](https://github.hubspot.com/sortable/).  Used to make the gene result table sortable
+
+The two OLS libraries have quite a few dependencies ([JQuery](https://jquery.com), [Handlebars](https://handlebarsjs.com), the core-js fork of [typeahead.js](https://typeahead.js.org/), and [jsTree](https://www.jstree.com)).  These are all linked from [cdnjs](https://cdnjs.com) instead of being separately downloaded and included with VExD.

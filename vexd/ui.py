@@ -1,5 +1,6 @@
 from flask import Blueprint, current_app, render_template, send_from_directory
 from flask.helpers import make_response
+import re
 from webargs import fields, validate
 from webargs.flaskparser import use_kwargs
 from .geo import geo
@@ -63,6 +64,25 @@ def gene_boxplot(q):
         plot.gene_boxplot(
             geo().get_gene_info(q),
             geo().get_results_by_gene(q)
+        )
+    )
+    response.content_type = 'image/png'
+    return response
+
+@bp.route('/gene/multiple', methods=['POST'])
+@use_kwargs({'raw_genes': fields.Str(), 'remove_unknown': fields.Boolean(missing=False)}, location='form')
+def gene_heatmap(raw_genes, remove_unknown):
+    gene_list = []
+    for gene_id in re.split(r'[\r\n ,;]+', raw_genes):
+        if gene_id == '':
+            continue
+        gene_info = geo().find_gene(gene_id)
+        if not (remove_unknown and gene_info is None):
+            gene_list.extend(gene_info if gene_info is not None else [{'ensembl_id': 'Unknown', 'symbol': gene_id}])
+    response = make_response(
+        plot.gene_heatmap(
+            gene_list,
+            geo().get_multiple_gene_results([g['ensembl_id'] for g in gene_list if g['ensembl_id'] != 'Unknown'])
         )
     )
     response.content_type = 'image/png'
