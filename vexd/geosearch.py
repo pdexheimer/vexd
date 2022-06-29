@@ -72,14 +72,58 @@ class GeoSearch:
         return list(self.virus.find(search_expr, projection=self.no_id))
 
     def find_gene_by_prefix(self, gene_prefix):
-        case_insensitive = {'$regex': f'^{gene_prefix}', '$options': 'i'}
+        full_match = {'$regex': f'^{gene_prefix}$', '$options': 'i'}
+        partial_match = {'$regex': f'^{gene_prefix}.', '$options': 'i'}
+        internal_match = {'$regex': f'.{gene_prefix}', '$options': 'i'}
+        result = self.genes.aggregate([
+            { '$match': {'$or': [
+                {'ensembl_id': full_match},
+                {'symbol': full_match},
+                {'alias': full_match},
+                {'refseq': full_match},
+            ]} },
+            { '$set': { 'matchQuality': 10} },
+            { '$unionWith': {
+                'coll': 'genes',
+                'pipeline': [
+                    { '$match': {'$or': [
+                        {'ensembl_id': partial_match},
+                        {'symbol': partial_match},
+                        {'alias': partial_match},
+                        {'refseq': partial_match},
+                    ]} },
+                    { '$set': { 'matchQuality': 5} }             
+                ]
+            } },
+            { '$unionWith': {
+                'coll': 'genes',
+                'pipeline': [
+                    { '$match': {'$or': [
+                        {'ensembl_id': internal_match},
+                        {'symbol': internal_match},
+                        {'alias': internal_match},
+                        {'refseq': internal_match},
+                    ]} },
+                    { '$set': { 'matchQuality': 1} }             
+                ]
+            } },
+            { '$sort': { 'matchQuality': -1 } },
+            { '$limit': 100 },
+            { '$project': {'_id': 0} },
+        ])
+        return list(result)
+
+    def find_gene(self, gene_name):
+        case_insensitive = {'$regex': f'^{gene_name}$', '$options': 'i'}
         search_expr = {'$or': [
             {'ensembl_id': case_insensitive},
             {'symbol': case_insensitive},
-            {'alias': case_insensitive},
             {'refseq': case_insensitive},
         ]}
-        return list(self.genes.find(search_expr, projection=self.no_id, limit=100))
+        result = list(self.genes.find(search_expr, projection=self.no_id, limit=100))
+        if not result:
+            result = list(self.genes.find({'alias': case_insensitive}, projection=self.no_id, limit=100))
+        return result if result else None
 
     def get_results_by_gene(self, ensembl_id):
         result = self.results.aggregate([
@@ -101,7 +145,15 @@ class GeoSearch:
             { '$sort': { 'adj_p': 1 }},
         ])
         return list(result)
-        #return list(self.results.find({'ensembl_id': ensembl_id.upper()}, projection=self.no_id, sort=[('adj_p', 1)]))
+        
+    def get_multiple_gene_results(self, ensembl_list):
+        """
+        Assumes that ensembl_list contains valid (ie, uppercase) IDs
+        """
+        return list(self.results.find(
+            {'ensembl_id': {'$in': ensembl_list}},
+            projection=self.no_id)
+        )
 
     def search_studies(self, virus_name, tissue, use_descendants, pval_cutoff=0.05, logfc_cutoff=1):
         #  1) match: Restrict to only studies of interest
