@@ -35,13 +35,14 @@ VExD will parse a file in `instance/config.py` for runtime configuration.  The f
 
 Any other [Flask configuration variable](https://flask.palletsprojects.com/en/2.0.x/config/?highlight=secret_key#builtin-configuration-values) can be set, though no others have been tested.
 
-## Creating static downloads
+## Precomputing Results
 
-Once VExD has been installed and configured (including the database) **and any time the database changes** be sure to (re-)generate the static database dumps available on the Downloads page.  This can be done from the vexd source directory:
+Once VExD has been installed and configured (including the database) **and any time the database changes** be sure to (re-)generate the static database dumps available on the Downloads page, as well as precompute the background distribution used for statistics on the Enrichment page.  This can be done from the vexd source directory:
 
 ```
 $ source env/bin/activate     # If necessary
 (env) $ flask create-downloads
+(env) $ flask save-distribution
 ```
 
 ## Running

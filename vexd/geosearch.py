@@ -125,6 +125,21 @@ class GeoSearch:
             result = list(self.genes.find({'alias': case_insensitive}, projection=self.no_id, limit=100))
         return result if result else None
 
+    def random_genes(self, num):
+        result = self.results.aggregate([
+            { '$group': { '_id': '$ensembl_id' } },
+            { '$lookup': {
+                'from': 'genes',
+                'localField': '_id',
+                'foreignField': 'ensembl_id',
+                'as': 'result'
+            }},
+            { '$match': { 'result': { '$exists': True, '$ne': [] } } },
+            { '$sample': { 'size': num } },
+            { '$project': { '_id': 1 } }
+        ])
+        return list(result)
+
     def get_results_by_gene(self, ensembl_id):
         result = self.results.aggregate([
             { '$match': { 'ensembl_id': ensembl_id.upper() } },
@@ -154,6 +169,15 @@ class GeoSearch:
             {'ensembl_id': {'$in': ensembl_list}},
             projection=self.no_id)
         )
+    
+    def get_all_results(self):
+        return list(self.results.aggregate([
+            { '$project': {
+                '_id': 0,
+                'ensembl_id': 1,
+                'logfc': 1
+            }}
+        ]))
 
     def search_studies(self, virus_name, tissue, use_descendants, pval_cutoff=0.05, logfc_cutoff=1):
         #  1) match: Restrict to only studies of interest

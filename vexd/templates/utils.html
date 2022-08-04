@@ -204,7 +204,7 @@ target="_blank"><img src="{{ url_for('static', filename='ols.png') }}" class="ge
 {%- macro uber_search_body(search_kids=True) -%}
 <form autocomplete="off" action="{{ url_for('ui.virus_results') }}" method="GET">
     <input type="hidden" name="tissue" id="tissue" />
-    <div id="filtercontainer">
+    <div class="filtercontainer">
         <div id="filters">
             <h3>Search for studies</h3>
             <div class="autocomplete">
@@ -313,7 +313,7 @@ target="_blank"><img src="{{ url_for('static', filename='ols.png') }}" class="ge
 
 {%- macro gene_search_body(compact=false, show_help=true) -%}
 <form autocomplete="off" action="{{ url_for('ui.display_gene_info') }}" method="GET">
-    <div id="filtercontainer">
+    <div class="filtercontainer">
         <div id="filters">
             {%- if not compact %}<h3>Search for gene</h3>{% endif -%}
             <div class="autocomplete">

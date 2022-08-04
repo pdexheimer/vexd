@@ -6,7 +6,7 @@ from matplotlib.figure import Figure
 from matplotlib.ticker import AutoLocator
 import pandas as pd
 import numpy as np
-from scipy.stats import gaussian_kde
+from scipy.stats import gaussian_kde, uniform
 import io
 import roman
 
@@ -100,7 +100,7 @@ def gene_boxplot(gene, gene_results):
     fig.savefig(buffer)
     return buffer.getvalue()
 
-def gene_heatmap(gene_list, all_results):
+def gene_heatmap(gene_list, results, sort_genes=False):
     """
     Creates a pseudo-heatmap showing the response of multiple genes to infection.
     Genes are displayed in rows, and elements in each row are colored based on
@@ -110,17 +110,15 @@ def gene_heatmap(gene_list, all_results):
     ----------
     gene_list: A list of genes, where each gene is represented as a dictionary
         containing (at least) 'ensembl_id' and 'symbol' keys.
-    all_results: The output of geosearch.get_multiple_gene_results(). A list of
-        dictionaries, where each dictionary represents a single gene in a single
-        experiment.  The list does not need to be sorted in any way, only the
-        'ensembl_id' and 'logfc' fields are used
+    results: A DataFrame containing at least the columns 'ensembl_id' and 'logfc'
+    sort_genes: If True, the genes will be sorted such that the genes with the
+        least change are last in the heatmap
 
     Returns a byte array containing a PNG image of the plot
     """
     # Generate density estimates for each gene over the entire range,
     # and stack them into a 2D numpy matrix.  Genes in gene_list that 
     # are not in the results will have a flat density of zero
-    results = pd.DataFrame(all_results)
     overall_density = gaussian_kde(results['logfc'].to_numpy())
     overall_density.set_bandwidth(overall_density.factor / 4.)
     max_extent = results['logfc'].abs().max()
@@ -128,8 +126,12 @@ def gene_heatmap(gene_list, all_results):
     xs = np.linspace(-max_extent, max_extent, 400)
     data = None
     for gene in gene_list:
-        if gene['ensembl_id'] != 'Unknown':
-            density = gaussian_kde(bygene.get_group(gene['ensembl_id'])['logfc'].to_numpy())
+        if gene['ensembl_id'] in bygene.groups:
+            values = bygene.get_group(gene['ensembl_id'])['logfc'].to_numpy()
+            # Add miniscule amounts of noise to prevent having a singular matrix
+            # in the KDE when the values are all 0
+            values += uniform.rvs(scale=1E-5, size=len(values))
+            density = gaussian_kde(values)
             density.set_bandwidth(density.factor / 4.)
             this_gene = density(xs)
         else:
@@ -138,11 +140,20 @@ def gene_heatmap(gene_list, all_results):
             data = this_gene
         else:
             data = np.vstack((data, this_gene))
+    if data.ndim == 1: # Only one gene - sorting doesn't matter, make the array 2D
+        sorted_data = np.expand_dims(data, axis=0)
+        ind = [0,]
+    elif sort_genes:
+        ind = np.lexsort(([sum(x[190:210]) for x in data],))
+        sorted_data = [data[i] for i in ind]
+    else:
+        ind = range(len(gene_list))
+        sorted_data = data
     
     # Create the figure, plot the density estimates, and add a vertical line at x=0
     fig = Figure(figsize=(13, 8), layout="constrained")
     ax = fig.add_subplot(10, 1, (2,10)) # Bottom 90%
-    img = ax.imshow(data, cmap='plasma', aspect='auto', norm=PowerNorm(0.4), interpolation='none')
+    img = ax.imshow(sorted_data, cmap='plasma', aspect='auto', norm=PowerNorm(0.4), interpolation='none')
     ax.axvline(len(xs)/2, color='k', linestyle='--')
     fig.colorbar(img, ax=ax, label='Density')
 
@@ -152,10 +163,10 @@ def gene_heatmap(gene_list, all_results):
     # formatter (to display the correct value) and a custom locator (to place
     # ticks at nice values in fold-change space)
     ax.set_xlabel("$log_2$ Fold Change")
-    fontsize = 'medium' if len(gene_list) < 50 else 'xx-small'
+    fontsize = min([10, 13 - int(len(gene_list)/12)])
     ax.set_yticks(
         range(len(gene_list)), 
-        [f'{g["symbol"]} ({g["ensembl_id"]})' for g in gene_list],
+        [f'{gene_list[i]["symbol"]} ({gene_list[i]["ensembl_id"]})' for i in ind],
         fontsize=fontsize
     )
     ax.xaxis.set_major_locator(AffineLocator(xs[0], xs[-1], 0, len(xs)))

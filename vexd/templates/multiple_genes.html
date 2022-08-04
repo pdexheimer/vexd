@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+{% block title %}VExD - Gene Enrichment{% endblock %}
+{% block head %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='autocomplete.css') }}" />
+<style>
+    body.wait * {
+        cursor: progress;
+    }
+    #results {
+        display: none;
+    }
+    #results span {
+        font-weight: bold;
+    }
+    #heatmap {
+        width: 100%;
+    }
+    fieldset {
+        display: inline-block;
+        border-width: 1px;
+    }
+    legend {
+        font-size: smaller;
+    }
+</style>
+<script>
+    window.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('filterform').addEventListener('submit', event => {
+            const formData = new FormData();
+            formData.append('raw_genes', document.getElementById('raw_genes').value);
+            formData.append('remove_unknown', document.getElementById('bad_genes').checked);
+            formData.append('sort_genes', document.getElementById('sort_genes').checked);
+            const postParams = {
+                'method': 'POST',
+                'body': formData
+            };
+            document.body.classList.add('wait');
+            document.getElementById("results").style.display = "none";
+            fetch("{{ url_for('ui.gene_heatmap') }}", postParams)
+                .then(response => response.json())
+                .then(async result => {
+                    document.getElementById("num_points").innerHTML = Number(result['num_measurements']).toLocaleString();
+                    document.getElementById("num_genes").innerHTML = result['num_genes'];
+                    document.getElementById("support").innerHTML = Number(result['support']*100).toFixed(2);
+                    document.getElementById("num_background").innerHTML = Number(result['num_background']).toLocaleString();
+                    document.getElementById("pval").innerHTML = Number(result['pval']).toPrecision(4);
+                    const img = document.getElementById("heatmap");
+                    const b64ToBlob = (base64) => fetch(`data:image/png;base64,${base64}`).then(res => res.blob());
+                    const imgBlob = await b64ToBlob(result['heatmap']);
+                    img.src = URL.createObjectURL(imgBlob);
+                    img.addEventListener('load', () => URL.revokeObjectURL(this.src));
+                    document.getElementById("results").style.display = "block";
+                })
+                .finally(() => {document.body.classList.remove('wait');});
+            event.preventDefault();
+        });
+        document.getElementById("add_random").addEventListener('click', () => {
+            const gene_box = document.getElementById('raw_genes');
+            const api = new URL("{{ url_for('api.random_geneids') }}", window.location);
+            api.search = "?num="+document.getElementById('num_random').value
+            document.body.classList.add('wait');
+            fetch(api).then(response => response.json())
+                .then(result => {
+                    const old_value = gene_box.value;
+                    if (!(old_value == '' || old_value.endsWith("\n"))) {
+                        gene_box.value = old_value + "\n";
+                    }
+                    gene_box.value = gene_box.value + result.join("\n");
+                })
+                .finally(() => {document.body.classList.remove('wait');});
+        });
+        document.getElementById("clear_genes").addEventListener('click', () => {
+            const gene_box = document.getElementById('raw_genes');
+            gene_box.value = "";
+        });
+        document.getElementById("set_ifn").addEventListener('click', () => {
+            const gene_box = document.getElementById('raw_genes');
+            gene_box.value = "B2M\nERAP1\nHLA-A\nHLA-B\nHLA-C\nHLA-E\nHLA-F\nHLA-G\nNLRC5\nPSMA5\nPSMB8\nPSMB9\nPSMB10\nPSME1\nPSME2\nRFX5\nTAP1\nTAP2\nTAPBP\nTAPBPL\nADAR\nAPOL1\nAPOL2\nAPOL3\nAPOL4\nIRAV\nIFIT2\nIFIT3\nISG15\nISG20\nMORC3\nMOV10\nMX1\nOAS1\nPARP12\nEIF2AK2\nPML\nRSAD2\nSAT1\nSCOTIN\nZC3HAV1\nDTX3L\nHERC6\nN4BP1\nNUB1\nPARP9\nRBCK1\nRNF19B\nRNF213\nRNF31\nUBA7\nUBE2L6\nAZI2\nMB21D1\nIRF1\nIRF7\nIRF9\nLGP2\nMDA5\nMYD88\nDDX58\nRNF114\nSTAT1\nSTAT2\nTLR3\nTRIM25\nCD274\nIFI35\nNMI\nPARP14\nSOCS1\nTRAFD1\nTRIM21\nUSP18\nUSP25\nCASP8\nCD47\nIL15RA\nLGALS9\nRICTOR\nTNFSF10\nC2\nCMPK2\nCMTR1\nDNAJA1\nDNAJC13\nEHD4\nFAM46a\nFMR1\nPNPT1\nSERTAD1\nSLC25A28\nSP110\nTDRD7\nWARS\nXAF1\nZCCHC2\nZNFX1";
+        });
+        document.getElementById("acmg").addEventListener('click', () => {
+            const gene_box = document.getElementById('raw_genes');
+            gene_box.value = "APC RET BRCA1 BRCA2 PALB2 SDHD SDHAF2 SDHC SDHB MAX TMEM127 BMPR1A SMAD4 TP53 MLH1 MSH2 MSH6 PMS2 MEN1 MUTYH NF2 STK11 PTEN RB1 TSC1 TSC2 VHL WT1 FBN1 TGFBR1 TGFBR2 SMAD3 ACTA2 MYH11 PKP2 DSP DSC2 TMEM43 DSG2 RYR2 CASQ2 TRDN TNNT2 LMNA FLNC TTN COL3A1 LDLR APOB PCSK9 MYH7 MYBPC3 TNNI3 TPM1 MYL3 ACTC1 PRKAG2 MYL2 KCNQ1 KCNH2 SCN5A BTD GLA OTC GAA HFE ACVRL1 ENG RYR1 CACNA1S HNF1A RPE65 ATP7B";
+        });
+        document.getElementById("yamanaka").addEventListener('click', () => {
+            const gene_box = document.getElementById('raw_genes');
+            gene_box.value = "Differentiated cells can be reprogrammed to an embryonic-like state by transfer of nuclear contents into oocytes or by fusion with embryonic stem (ES) cells. Little is known about factors that induce this reprogramming. Here, we demonstrate induction of pluripotent stem cells from mouse embryonic or adult fibroblasts by introducing four factors, Oct3/4, Sox2, c-Myc, and Klf4, under ES cell culture conditions. Unexpectedly, Nanog was dispensable. These cells, which we designated iPS (induced pluripotent stem) cells, exhibit the morphology and growth properties of ES cells and express ES cell marker genes. Subcutaneous transplantation of iPS cells into nude mice resulted in tumors containing a variety of tissues from all three germ layers. Following injection into blastocysts, iPS cells contributed to mouse embryonic development. These data demonstrate that pluripotent stem cells can be directly generated from fibroblast cultures by the addition of only a few defined factors.";
+            document.getElementById('bad_genes').checked = true;
+        });
+    });
+    window.addEventListener('load', () => {
+        for (const id of ['raw_genes', 'badlabel', 'bad_genes', 'sortlabel', 'sort_genes', 'randomlabel', 'add_random', 'clear_genes'])
+            initHelp(document.getElementById(id));
+        showHelp();
+    });
+    function initHelp(el) {
+        el.addEventListener('mouseover', () => showHelp(el));
+        el.addEventListener('mouseout', () => showHelp());
+        el.addEventListener('focus', () => showHelp());
+    }
+    function clearContents(el) {
+        while (el.hasChildNodes())
+            el.removeChild(el.firstChild);
+        el.innerHTML = "";
+    }
+    function populateHelpBox(box, text, title) {
+        if (title) {
+            var h5 = document.createElement("h5");
+            h5.innerHTML = title;
+            box.appendChild(h5);
+        }
+        var p = document.createElement("p");
+        p.innerHTML = text;
+        box.appendChild(p);
+    }
+    function showHelp(forElement=document.activeElement) {
+        helpBox = document.getElementById('helpbox');
+        clearContents(helpBox);
+        switch (forElement.id) {
+            case 'raw_genes': 
+                populateHelpBox(helpBox,
+                    "Enter multiple genes, separated by spaces, commas, semicolons, or line breaks. Valid identifiers include gene symbols, Ensembl Gene IDs, or RefSeq IDs.",
+                    "Gene List");
+                break;
+            case 'badlabel':
+            case 'bad_genes': 
+                populateHelpBox(helpBox,
+                    "If selected, any unrecognized gene IDs will be removed from the final plot. Otherwise, unrecognized IDs will be retained with no data.",
+                    "Ignore unknown gene IDs?");
+                break;
+            case 'sortlabel':
+            case 'sort_genes': 
+                populateHelpBox(helpBox,
+                    "If selected, genes in the final plot will be sorted by their relative density at zero fold change. This will generally put the genes with the most change in regulation at the top of the figure. Otherwise, genes will be plotted in the order they're input.",
+                    "Sort Genes?");
+                break;
+            case 'randomlabel':
+            case 'add_random': 
+                populateHelpBox(helpBox,
+                    "Add a random selection of genes to the gene list for plotting. Useful for including a random background of gene expression.",
+                    "Add random genes");
+                break;
+            case 'clear_genes': 
+                populateHelpBox(helpBox,
+                    "Remove every entry from the gene list.",
+                    "Clear Gene List");
+                break;
+            default:
+                populateHelpBox(helpBox, "Mouse over or select an input field for help.");
+        }
+    }
+</script>
+{% endblock %}
+{% block body %}
+<p>Enter multiple gene symbols, Ensembl IDs, or Refseq IDs. VExD will report whether the regulation of these genes differs 
+significantly from the distribution of all genes in all experiments in VExD. In addition, a heatmap showing the overall
+regulation of these genes will be generated.</p>
+<div class="filtercontainer">
+    <div id="filters"><form id="filterform">
+        <textarea id="raw_genes" name="raw_genes" autocomplete="off" rows="10" cols="36" autofocus required></textarea><br>
+        <fieldset>
+            <legend>Plot</legend>
+            <input type="checkbox" id="bad_genes" name="remove_unknown"/> <label for="bad_genes" id="badlabel">Ignore unknown gene IDs?</label><br>
+            <input type="checkbox" id="sort_genes" name="sort_genes" checked /> <label for="sort_genes" id="sortlabel">Sort genes?</label><br>
+        </fieldset>
+        <fieldset>
+            <legend>Genes</legend>
+            <button id="add_random" type="button">Add</button> <label for="add_random" id="randomlabel"><input type="number" id="num_random" value="10" min="1" max="100" style="width: 3em" /> random</label><br>
+            <button id="clear_genes" type="button">Clear All</button>
+        </fieldset><br>
+        <button>Calculate Enrichment</button>
+    </form></div>
+    <div id="filterhelp">
+        <div id="helpbox"></div>
+    </div>
+</div>
+<br>
+<div id="results">
+<p><span id="num_points"></span> measurements of <span id="num_genes"></span> distinct genes were found.</p>
+<p>A random measurement from this set has a <span id="support"></span><b>%</b> chance of being larger than a 
+random selection from the other <span id="num_background"></span> measurements in VExD.</p>
+<p>Using the (two-sided) Brunner-Munzel test, the p-value for this set being distinct from the background is <span id="pval"></span>.</p>
+<img id="heatmap" />
+</div>
+<div id="heatmap_display"></div>
+<p><b>Examples</b></p>
+<ul>
+<li><button id="set_ifn">Interferon-stimulated genes</button> from Table 1 of Shaw <i>et al</i> 2017 (<a href="https://doi.org/10.1371/journal.pbio.2004086">doi:10.1371/journal.pbio.2004086</a>)</li>
+<li><button id="acmg">ACMG Secondary Findings genes</button> from Table 1 of Miller <i>et al</i> 2021 (<a href="https://doi.org/10.1038/s41436-021-01172-3">doi:10.1038/s41436-021-01172-3</a>)
+<li><button id="yamanaka">The abstract from Takahashi &amp; Yamanaka 2006</button> (<a href="https://doi.org/10.1016/j.cell.2006.07.024">doi:10.1016/j.cell.2006.07.024</a>) - note that searching for gene symbols in text yields several false positives due to common English words (<i>of</i>, <i>an</i>, <i>cell</i>) being valid gene aliases.</li>
+</ul>
+{% endblock %}
