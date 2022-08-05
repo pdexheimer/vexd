@@ -4,48 +4,10 @@
 {% block head %}
     {{ super() }}
     {{ gene_search_head() }}
-    <script>
-        window.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('make_heatmap').addEventListener('click', () => {
-                const resultDiv = document.getElementById('heatmap_display');
-                while (resultDiv.hasChildNodes()) resultDiv.removeChild(resultDiv.firstChild);
-                resultDiv.innerHTML = "Rendering...";
-                resultDiv.scrollIntoView();
-                const formData = new FormData();
-                formData.append('raw_genes', document.getElementById('raw_genes').value);
-                formData.append('remove_unknown', document.getElementById('bad_genes').checked);
-                const postParams = {
-                    'method': 'POST',
-                    'body': formData
-                };
-                fetch("{{ url_for('ui.gene_heatmap') }}", postParams)
-                    .then(response => response.blob())
-                    .then(imageBlob => {
-                        while (resultDiv.hasChildNodes()) resultDiv.removeChild(resultDiv.firstChild);
-                        resultDiv.innerHTML = "";
-                        const img = document.createElement("img");
-                        img.style.width = "100%";
-                        img.src = URL.createObjectURL(imageBlob);
-                        img.addEventListener('load', () => URL.revokeObjectURL(this.src));
-                        resultDiv.appendChild(img);
-                    });
-            });
-        });
-    </script>
 {% endblock %}
 {% block body %}
-    <h2>Query Individual Genes</h2>
     <p>Look up specific genes to see their regulation and p-value in all viral infection experiments.  Note that some experiments, particularly those that use older microarrays, may not query all genes.</p>
     <p>More detailed instructions can be found on the <a href="{{ url_for('ui.help') }}">Help</a> page.</p>
     <p><strong>Example Searches:</strong> <a href="{{ url_for('ui.display_gene_info', q='ENSG00000187608') }}">ISG15</a> &bull; <a href="{{ url_for('ui.display_gene_info', q='ENSG00000162231') }}">NXF1</a> &bull; <a href="{{ url_for('ui.display_gene_info', q='ENSG00000077150') }}">NFKB2</a></p>
     {{ gene_search_body() }}
-    <br>
-    <h2>Query Multiple Genes</h2>
-    <p>Enter multiple gene symbols, Ensembl IDs, or Refseq IDs. The resulting plot will summarize the 
-    expression of each known gene over all viral infection experiments in VExD.</p>
-    <textarea id="raw_genes" name="raw_genes" autocomplete="off" rows="10" cols="30"></textarea><br>
-    <input type="checkbox" id="bad_genes" name="remove_unknown"/> <label for="bad_genes">Remove unknown gene IDs from final plot?</label><br>
-    <input type="button" id="make_heatmap" value="Generate Plot" /><br>
-    <br>
-    <div id="heatmap_display"></div>
 {% endblock %}

@@ -1,6 +1,7 @@
-from pymongo import MongoClient
+import numpy as np
 import pandas as pd
 import click
+from flask import current_app
 
 # A Mongo aggregation pipeline to get all differential expression results
 _deg_aggregation = [
@@ -195,10 +196,9 @@ def _write_dataframe(df, basename, directory=None):
     df.to_parquet(f'{path}.parquet')
 
 
-def prepare_db_dumps(directory):
+def prepare_db_dumps(geo, directory):
     click.echo(f'Preparing to create download files in {directory}')
-    client = MongoClient()
-    db = client.vexd
+    db = geo.client.vexd
     click.echo('Collecting DEG results...')
     result = db.results.aggregate(_deg_aggregation, allowDiskUse=True)
     click.echo('Creating result matrix...')
@@ -239,3 +239,27 @@ def prepare_db_dumps(directory):
     click.echo('Writing files...')
     _write_dataframe(pd.DataFrame(list(result)), 'deg_analyses', directory)
     click.echo('Done creating downloads')
+
+def save_background_distribution(geo):
+    click.echo("Retrieving background distribution...")
+    all_results = pd.DataFrame(geo.get_all_results())['logfc']
+    click.echo("Sorting distribution...")
+    all_results = all_results.sort_values(ascending=True, ignore_index=True)
+    click.echo("Subsetting and saving...")
+    stride = all_results.iloc[::1000]
+    max_rank = len(all_results)-1
+    max_val = all_results.iloc[-1]
+    max_stride_rank = stride.index[-1]
+    max_stride_val = stride.iloc[-1]
+    stride = pd.concat([stride, pd.Series([max_stride_val + 1000*(max_val - max_stride_val) / (max_rank - max_stride_rank)])], ignore_index=True)
+    background = pd.DataFrame({'logfc': stride, 'megarank': stride.index.to_series()})
+    background.insert(0, 'duplicated', background['logfc'].duplicated(keep=False))
+    background.drop_duplicates(subset='logfc', inplace=True)
+    background.loc[background['duplicated'], 'megarank'] = np.nan
+    background['megarank'].interpolate(inplace=True)
+    with current_app.open_instance_resource('background.csv', 'w') as f:
+        background.to_csv(f, columns=['logfc', 'megarank'], index=False)
+    with current_app.open_instance_resource('bg_count.txt', 'w') as f:
+        f.write(str(len(all_results)))
+    click.echo("Background distribution saved")
+

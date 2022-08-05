@@ -191,7 +191,7 @@
     margin-bottom: 0.5rem;
 }
 
-#filtercontainer {
+.filtercontainer {
     display: flex;
     justify-content: center;
 }

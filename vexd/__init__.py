@@ -46,7 +46,11 @@ def create_app(test_config=None):
 
     @app.cli.command('create-downloads')
     def create_downloads():
-        commands.prepare_db_dumps(app.config['DOWNLOAD_DIRECTORY'])
+        commands.prepare_db_dumps(geo.geo(), app.config['DOWNLOAD_DIRECTORY'])
+    
+    @app.cli.command('save-distribution')
+    def save_distribution():
+        commands.save_background_distribution(geo.geo())
 
     @app.before_request
     def fake_https_if_asked():

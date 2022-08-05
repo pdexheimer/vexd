@@ -1,11 +1,14 @@
+import base64
+from collections import Counter
 from flask import Blueprint, current_app, render_template, send_from_directory
 from flask.helpers import make_response
 import re
 from webargs import fields, validate
 from webargs.flaskparser import use_kwargs
+import pandas as pd
 from .geo import geo
 from . import plot
-from .utils import parse_dl_files
+from .utils import enrichment, parse_dl_files
 
 bp = Blueprint('ui', __name__, url_prefix='/')
 
@@ -70,23 +73,50 @@ def gene_boxplot(q):
     return response
 
 @bp.route('/gene/multiple', methods=['POST'])
-@use_kwargs({'raw_genes': fields.Str(), 'remove_unknown': fields.Boolean(missing=False)}, location='form')
-def gene_heatmap(raw_genes, remove_unknown):
+@use_kwargs({
+    'raw_genes': fields.Str(), 
+    'remove_unknown': fields.Boolean(missing=False),
+    'sort_genes': fields.Boolean(missing=False),
+}, location='form')
+def gene_heatmap(raw_genes, remove_unknown, sort_genes):
     gene_list = []
-    for gene_id in re.split(r'[\r\n ,;]+', raw_genes):
+    escaped = raw_genes.translate(str.maketrans({
+        "-": r"\-", "*": r"\*", "+": r"\+", "^": r"\^", "$": r"\$",
+        "(": r"\(", ")": r"\)", "[": r"\[", "]": r"\]", ".": r"\.", "\\": r"\\"
+    }))
+    # Get the unique input symbols, but maintain their order (so a set won't work)
+    input_genes = list(Counter(re.split(r'[\r\n ,;]+', escaped)))
+    for gene_id in input_genes:
+        if len(gene_list) >= 150:
+            break
         if gene_id == '':
             continue
         gene_info = geo().find_gene(gene_id)
         if not (remove_unknown and gene_info is None):
             gene_list.extend(gene_info if gene_info is not None else [{'ensembl_id': 'Unknown', 'symbol': gene_id}])
-    response = make_response(
-        plot.gene_heatmap(
-            gene_list,
-            geo().get_multiple_gene_results([g['ensembl_id'] for g in gene_list if g['ensembl_id'] != 'Unknown'])
-        )
-    )
-    response.content_type = 'image/png'
-    return response
+    gene_results = pd.DataFrame(geo().get_multiple_gene_results([g['ensembl_id'] for g in gene_list if g['ensembl_id'] != 'Unknown']))
+    if gene_results.empty:
+        return make_response({
+            'num_genes': 0,
+            'num_measurements': 0,
+            'num_background': 'NA',
+            'support': 'NA',
+            'pval': 'NA',
+            'heatmap': base64.b64encode(b'').decode(),
+        })
+    enrich = enrichment(gene_results['logfc'])
+    return make_response({ 
+        'num_genes': gene_results['ensembl_id'].nunique(),
+        'num_measurements': enrich['n1'],
+        'num_background': enrich['n2'],
+        'support': enrich['support'],
+        'pval': enrich['pvalue'],
+        'heatmap': base64.b64encode(plot.gene_heatmap(gene_list, gene_results, sort_genes)).decode(),
+    })
+
+@bp.route('/enrich')
+def multiple_genes():
+    return render_template('multiple_genes.html')
 
 @bp.route('/gene/txt')
 @use_kwargs({'q': fields.Str()}, location='query')

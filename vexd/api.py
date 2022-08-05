@@ -40,6 +40,11 @@ result_args = {
 def analysis_preview(virus, study, platform, cell_type, geneSet):
     return jsonify(geo().get_analysis_results(study, virus, cell_type, platform, geneSet, 10))
 
+@bp.route('/random/gene')
+@use_kwargs({'num': fields.Int()}, location='query')
+def random_geneids(num=10):
+    return jsonify([ g['_id'] for g in geo().random_genes(num) ])
+
 # Virus Endpoints
 
 @bp.route('/v1/virus/name/<name>')
