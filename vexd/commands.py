@@ -240,26 +240,70 @@ def prepare_db_dumps(geo, directory):
     _write_dataframe(pd.DataFrame(list(result)), 'deg_analyses', directory)
     click.echo('Done creating downloads')
 
+def extrapolate(max_rank, max_val, max_reduced_rank, max_reduced_val, stride):
+    return max_reduced_val + (stride/(max_rank-max_reduced_rank))*(max_val-max_reduced_val)
+
+def deduplicate(df, col_with_dupes='logfc', col_to_interp='megarank'):
+    dedup = pd.DataFrame(df)
+    dedup.insert(0, 'duplicated', df[col_with_dupes].duplicated(keep=False))
+    dedup.drop_duplicates(subset=col_with_dupes, keep='first', inplace=True)
+    dedup.loc[dedup['duplicated'], col_to_interp] = np.nan
+    dedup[col_to_interp].interpolate(inplace=True)
+    return dedup.drop(columns='duplicated')
+
+def reduce_distribution(values, stride=1000):
+    """
+    Given a sorted Series of values, computes a reduced distribution of the same
+    values.  The intention is that the reduced distribution is much smaller and
+    easier to work with, and still provides a reasonable base for imputing the
+    missing data later on.  The final (len(values) % stride) values are extrapolated
+    to the next appropriate data point
+
+    Returns a DataFrame with (rank/stride) as the index and the appropriate values
+    in a column.  The column's name will be values.name from the input Series
+    (defaulting to 'logfc')
+    """
+    reduced_values = values.iloc[::stride]
+    extrapolated_val = extrapolate(len(values)-1, values.iloc[-1], len(reduced_values)-1, reduced_values.iloc[-1], stride)
+    # Add the extrapolated value and simultaneously reset the reduced index
+    reduced_values = pd.concat([reduced_values, pd.Series([extrapolated_val,])], ignore_index=True)
+    df = deduplicate(pd.DataFrame({'logfc': reduced_values, 'megarank': reduced_values.index.to_series()}))
+    if values.name is not None:
+        df.rename(columns={'logfc': values.name}, inplace=True)
+    return df.set_index('megarank')
+
 def save_background_distribution(geo):
     click.echo("Retrieving background distribution...")
-    all_results = pd.DataFrame(geo.get_all_results())['logfc']
+    all_results = pd.DataFrame(geo.get_all_results())\
+        .drop('ensembl_id', axis='columns')\
+        .set_index(['virus', 'bto_id'])
     click.echo("Sorting distribution...")
-    all_results = all_results.sort_values(ascending=True, ignore_index=True)
+    all_results = all_results.sort_values(by='logfc', ascending=True)
     click.echo("Subsetting and saving...")
-    stride = all_results.iloc[::1000]
-    max_rank = len(all_results)-1
-    max_val = all_results.iloc[-1]
-    max_stride_rank = stride.index[-1]
-    max_stride_val = stride.iloc[-1]
-    stride = pd.concat([stride, pd.Series([max_stride_val + 1000*(max_val - max_stride_val) / (max_rank - max_stride_rank)])], ignore_index=True)
-    background = pd.DataFrame({'logfc': stride, 'megarank': stride.index.to_series()})
-    background.insert(0, 'duplicated', background['logfc'].duplicated(keep=False))
-    background.drop_duplicates(subset='logfc', inplace=True)
-    background.loc[background['duplicated'], 'megarank'] = np.nan
-    background['megarank'].interpolate(inplace=True)
+    background = reduce_distribution(all_results['logfc'])
+    subsets = [('N/A', 'N/A')]
+    subset_sizes = [all_results.shape[0],]
+    click.echo("  Subsetting by virus...")
+    for g, subdf in all_results.groupby('virus', sort=False):
+        background = background.join(reduce_distribution(subdf['logfc']), rsuffix='a')
+        subsets.append((g,'N/A'))
+        subset_sizes.append(subdf.shape[0])
+    click.echo("  Subsetting by cell type...")
+    for g, subdf in all_results.groupby('bto_id', sort=False):
+        background = background.join(reduce_distribution(subdf['logfc']), rsuffix='a')
+        subsets.append(('N/A',g))
+        subset_sizes.append(subdf.shape[0])
+    click.echo("  Subsetting by virus x cell type...")
+    for g, subdf in all_results.groupby(['virus', 'bto_id'], sort=False):
+        background = background.join(reduce_distribution(subdf['logfc']), rsuffix='a')
+        subsets.append(g)
+        subset_sizes.append(subdf.shape[0])
+    click.echo("  Saving...")
+    subset_index = pd.MultiIndex.from_tuples(subsets, names=['virus', 'bto_id'])
+    background.columns = subset_index
     with current_app.open_instance_resource('background.csv', 'w') as f:
-        background.to_csv(f, columns=['logfc', 'megarank'], index=False)
-    with current_app.open_instance_resource('bg_count.txt', 'w') as f:
-        f.write(str(len(all_results)))
+        background.to_csv(f, index=True)
+    with current_app.open_instance_resource('counts.csv', 'w') as f:
+        pd.Series(subset_sizes, index=subset_index, name="count").to_csv(f)
     click.echo("Background distribution saved")
 
