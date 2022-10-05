@@ -3,6 +3,8 @@ import pandas as pd
 import click
 from flask import current_app
 
+from . import utils
+
 # A Mongo aggregation pipeline to get all differential expression results
 _deg_aggregation = [
     {
@@ -307,3 +309,26 @@ def save_background_distribution(geo):
         pd.Series(subset_sizes, index=subset_index, name="count").to_csv(f)
     click.echo("Background distribution saved")
 
+def arbitrary_enrichment(geo, query, virus_query):
+    db = geo.client.vexd
+    if virus_query is None:
+        results = list(db.results.find(query, projection=geo.no_id))
+    else:
+        results = list(db.results.aggregate([
+            {'$match': query},
+            {'$lookup': {
+                'from': 'viruses', 
+                'localField': 'virus', 
+                'foreignField': 'species',
+                'as': 'virus_info',
+            }},
+            {'$match': virus_query}
+        ]))
+    click.echo(f"Retrieved {len(results)} measurements from database")
+    if len(results) == 0:
+        return
+    enrich = utils.enrichment(pd.DataFrame(results)['logfc'])
+    click.echo(f"Comparing {enrich['n1']} genes to background of {enrich['n2']}")
+    click.echo(f"B-M statistic: {enrich['statistic']}")
+    click.echo(f"Stochastic superiority: {enrich['support']}")
+    click.echo(f"P-value: {enrich['pvalue']}")
