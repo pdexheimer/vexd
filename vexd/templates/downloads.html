@@ -47,13 +47,13 @@
 {%- endmacro %}
 {% block body %}
 <p>From this page, you can download the complete annotations and results found in VExD.  All results are provided as tab-separated text files and as <a href="https://parquet.apache.org">Parquet</a> objects which can be <a href="https://pandas.pydata.org/docs/reference/api/pandas.read_parquet.html#pandas.read_parquet">easily loaded into pandas DataFrames</a>.  The data in both files is the same, so pick the format most convenient for your purpose.</p>
-<p>For convenience, we also provide complete differential expression results for every virus individually.  To further customize the results, see the <a href="{{ url_for('ui.vexd_home') }}">Search</a> page.</p>
+<p>For convenience, we also provide complete differential expression results for every virus individually.  To further customize the results, see the <a href="{{ url_for('ui.study_search') }}">Study Search</a> page.</p>
 <h2>Full Database Downloads</h2>
 <div class="flex-container">
 {{ download("<b>All annotations</b>", file_info.annot) }}
 {{ download("<b>All Fold Changes</b>", file_info.all) }}
 </div>
-<p>The <b>All annotations</b> file contains one row per &quot;analysis&quot; in VExD, similar to the results on the <a href="{{ url_for('ui.vexd_home') }}">Search</a> page. Each row summarizes the data for a single unique combination of GEO study id, virus, (BTO-annotated) cell/tissue type, and analysis platform.  The file includes the number of samples in the analysis, as well as (if appropriate) the number of total significant genes and up/down regulated significant genes.</p>
+<p>The <b>All annotations</b> file contains one row per &quot;analysis&quot; in VExD, similar to the results on the <a href="{{ url_for('ui.study_search') }}">Study Search</a> page. Each row summarizes the data for a single unique combination of GEO study id, virus, (BTO-annotated) cell/tissue type, and analysis platform.  The file includes the number of samples in the analysis, as well as (if appropriate) the number of total significant genes and up/down regulated significant genes.</p>
 <p>The <b>All Fold Changes</b> file is a matrix of genes (in rows) by analyses (in columns).  It includes six header lines that describe the columns (one each to describe the study, virus, BTO ID, BTO Name, experimental platform, and data type), followed by a header line to describe the gene annotations (Ensembl ID and Symbol).  There are two columns per analysis, distinguished by the <code>data</code> header, that contain the log<sub>2</sub> fold change of infected samples versus controls and the Benjamini-Hochberg adjusted p-value of that comparison.</p>
 <h2>Virus-Specific Downloads</h2>
 <p>These files are distinct subsets of the <b>All Fold Changes</b> file above.  They follow the same format as that file, except that they do not include the <code>virus</code> column header.</p>
