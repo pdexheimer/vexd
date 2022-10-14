@@ -14,39 +14,12 @@ bp = Blueprint('api', __name__, url_prefix='/api')
 def json_error(e):
     return jsonify(error=str(e)), e.code
 
-# Typeahead endpoints for autocomplete boxes
-# Not part of the public API
+#########################################
+## Public API
+#########################################
 
-@bp.route('/virus_typeahead/<text>')
-def virus_typeahead(text):
-    return jsonify(geo().find_virus_by_prefix(text))
-
-@bp.route('/gene_typeahead/<text>')
-def gene_typeahead(text):
-    return jsonify(geo().find_gene_by_prefix(text))
-
-# Other endpoints used for dynamical web-ness
-# Not part of the public API
-
-result_args = {
-    'virus': fields.Str(),
-    'study': fields.Str(),
-    'platform': fields.Str(),
-    'cell_type': fields.Str()
-}
-@bp.route('/preview/<geneSet>')
-@use_kwargs({'geneSet': fields.Str(validate=validate.OneOf(['sig','up','down']))}, location='view_args')
-@use_kwargs(result_args, location='query')
-def analysis_preview(virus, study, platform, cell_type, geneSet):
-    return jsonify(geo().get_analysis_results(study, virus, cell_type, platform, geneSet, 10))
-
-@bp.route('/random/gene')
-@use_kwargs({'num': fields.Int()}, location='query')
-def random_geneids(num=10):
-    return jsonify([ g['_id'] for g in geo().random_genes(num) ])
-
-# Virus Endpoints
-
+# Virus Information
+#====================
 @bp.route('/v1/virus/name/<name>')
 def virus_info(name):
     result = geo().get_virus(name)
@@ -72,8 +45,8 @@ def meta_virus_lookup(**kwargs):
         return virus_info(kwargs['name'])
     return virus_lookup(kwargs['alias'])
 
-# GEO Endpoints
-
+# GEO Lookup
+#===================
 @bp.route('/v1/geo/<id>')
 def geo_lookup(id):
     id = id.upper()
@@ -82,8 +55,8 @@ def geo_lookup(id):
         abort(404, description=f'{id} has not been curated')
     return result
 
-# Search Endpoints
-
+# Study Search
+#====================
 study_search_args = {
     'virus': fields.Str(missing=''),
     'bto_id': fields.Str(
@@ -98,6 +71,8 @@ study_search_args = {
 def search_studies(args):
     return jsonify(geo().search_studies(args['virus'], args['bto_id'].upper(), args['include_bto_children']))
 
+# Gene Results
+#====================
 result_args = {
     'study': fields.Str(
         missing='',
@@ -133,3 +108,38 @@ def search_results(args):
         args['platform'],
         args['set']
     ))
+
+#########################################
+## Private API
+#########################################
+
+# Typeahead lookup (for autocomplete)
+#======================================
+@bp.route('/virus_typeahead/<text>')
+def virus_typeahead(text):
+    return jsonify(geo().find_virus_by_prefix(text))
+
+@bp.route('/gene_typeahead/<text>')
+def gene_typeahead(text):
+    return jsonify(geo().find_gene_by_prefix(text))
+
+# Random (measured) gene list
+#================================
+@bp.route('/random/gene')
+@use_kwargs({'num': fields.Int()}, location='query')
+def random_geneids(num=10):
+    return jsonify([ g['_id'] for g in geo().random_genes(num) ])
+
+# "Top 10" genes from an analysis
+#==================================
+result_args = {
+    'virus': fields.Str(),
+    'study': fields.Str(),
+    'platform': fields.Str(),
+    'cell_type': fields.Str()
+}
+@bp.route('/preview/<geneSet>')
+@use_kwargs({'geneSet': fields.Str(validate=validate.OneOf(['sig','up','down']))}, location='view_args')
+@use_kwargs(result_args, location='query')
+def analysis_preview(virus, study, platform, cell_type, geneSet):
+    return jsonify(geo().get_analysis_results(study, virus, cell_type, platform, geneSet, 10))

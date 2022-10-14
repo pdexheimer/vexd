@@ -6,6 +6,8 @@
     {{ gene_search_head() }}
 {% endblock %}
 {% block body %}
+    <p>The <b>Virus Expression Database (VExD)</b> contains a comprehensive list of bulk RNA-Seq and microarray experiments that involve direct infection of human cells or tissue with a virus.  All data has been uniformly processed using a common gene reference (see <a href="{{ url_for('ui.methods') }}">Methods</a>) so that differentially expressed genes are as comparable as possible.</p>
+    <p>VExD currently contains <a href="{{ url_for('ui.about', _anchor='viruses') }}">{{ study_count }} different studies from GEO tracking infection of {{ virus_count }} distinct viruses</a>.</p>
     <p>Look up specific genes to see their regulation and p-value in all viral infection experiments.  Note that some experiments, particularly those that use older microarrays, may not query all genes.</p>
     <p>More detailed instructions can be found on the <a href="{{ url_for('ui.help') }}">Help</a> page.</p>
     <p><strong>Example Searches:</strong> <a href="{{ url_for('ui.display_gene_info', q='ENSG00000187608') }}">ISG15</a> &bull; <a href="{{ url_for('ui.display_gene_info', q='ENSG00000162231') }}">NXF1</a> &bull; <a href="{{ url_for('ui.display_gene_info', q='ENSG00000077150') }}">NFKB2</a></p>
