@@ -32,21 +32,21 @@ def parse_dl_files(directory):
         result['virus'][virus] = collect_files(dir, tsv.stem)
     return result
 
-def get_background_distribution():
+def get_background_distribution(virus='N/A', bto_id='N/A'):
     if 'bg' not in g:
         with current_app.open_instance_resource('background.csv') as f:
-            g.bg = pd.read_csv(f)
-    return g.bg
+            g.bg = pd.read_csv(f, header=[0,1], index_col=0)
+    return g.bg.loc[:, (virus, bto_id)].dropna()
 
-def get_background_size():
+def get_background_size(virus='N/A', bto_id='N/A'):
     if 'bg_size' not in g:
-        with current_app.open_instance_resource('bg_count.txt') as f:
-            g.bg_size = int(f.readline())
-    return g.bg_size
+        with current_app.open_instance_resource('counts.csv') as f:
+            g.bg_size = pd.read_csv(f, keep_default_na=False, na_values=[""]).set_index(['virus', 'bto_id'])
+    return int(g.bg_size.loc[(virus, bto_id), "count"])
 
-def get_rank(val):
-    bg = get_background_distribution()
-    return np.rint(np.interp(val, bg['logfc'].to_numpy(), bg['megarank'].to_numpy()*1000))
+def get_rank(val, virus='N/A', bto_id='N/A'):
+    bg = get_background_distribution(virus, bto_id)
+    return np.rint(np.interp(val, bg.to_numpy(), bg.index.to_numpy()*1000))
 
 def mannwhitney(vals):
     ranks = get_rank(vals)
@@ -85,9 +85,10 @@ def brunner_munzel(ranks, total_size):
     rank1 = np.sort(ranks)
     n1 = len(rank1)
     n2 = total_size - n1
-    mean_rank1 = np.mean(rank1)
     exp_mean1 = (n1+1)/2.0
-    mean_rank2 = exp_mean2 = (n2+1)/2.0
+    exp_mean2 = (n2+1)/2.0
+    mean_rank1 = np.mean(rank1)
+    mean_rank2 = (total_size+1)/2.0
     # Now remove all of the values in rank1 from the mean of rank2
     # https://math.stackexchange.com/a/22351
     for i in range(n1):
@@ -115,9 +116,12 @@ def brunner_munzel(ranks, total_size):
         'n2': n2,
     }
 
-def enrichment(logfc_list):
+def enrichment(logfc_list, virus='N/A', bto_id='N/A'):
     """
     Given a set of log fold changes, computes the enrichment of them compared to
     the background of all computed logfc's in the database
     """
-    return brunner_munzel(get_rank(logfc_list), get_background_size())
+    return brunner_munzel(
+        get_rank(logfc_list, virus, bto_id), 
+        get_background_size(virus, bto_id)
+    )

@@ -174,6 +174,8 @@ class GeoSearch:
         return list(self.results.aggregate([
             { '$project': {
                 '_id': 0,
+                'virus': 1,
+                'bto_id': 1,
                 'ensembl_id': 1,
                 'logfc': 1
             }}
