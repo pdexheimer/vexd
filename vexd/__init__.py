@@ -1,5 +1,7 @@
 import os
+import json
 
+import click
 from flask import Flask, request
 from markupsafe import Markup
 
@@ -51,6 +53,12 @@ def create_app(test_config=None):
     @app.cli.command('save-distribution')
     def save_distribution():
         commands.save_background_distribution(geo.geo())
+
+    @app.cli.command('enrich')
+    @click.option('--query', default='{}', help='JSON argument to results.find() to retrieve measurements')
+    @click.option('--virus-query', default=None, help='Query to restrict by virus.  Should use virus_info as outer container')
+    def arbitrary_enrichment(query, virus_query):
+        commands.arbitrary_enrichment(geo.geo(), json.loads(query), json.loads(virus_query) if virus_query else None)
 
     @app.before_request
     def fake_https_if_asked():
