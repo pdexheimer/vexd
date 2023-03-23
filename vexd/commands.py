@@ -275,6 +275,17 @@ def reduce_distribution(values, stride=1000):
     return df.set_index('megarank')
 
 def save_background_distribution(geo):
+    click.echo("Identifying unique virus/tissue combinations...")
+    geo.client.vexd.drop_collection('virus_tissue')
+    combos = list(geo.client.vexd.results.aggregate([
+        { '$group': { '_id': {
+                'virus': '$virus',
+                'bto_id': '$bto_id',
+                'bto_name': '$bto_name',
+        }}},
+        { '$replaceRoot': { 'newRoot': '$_id' }}
+    ]))
+    geo.client.vexd.virus_tissue.insert_many(combos)
     click.echo("Retrieving background distribution...")
     all_results = pd.DataFrame(geo.get_all_results())\
         .drop('ensembl_id', axis='columns')\

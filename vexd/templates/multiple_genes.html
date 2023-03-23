@@ -25,12 +25,33 @@
     }
 </style>
 <script>
+    const cellTypesByVirus = {
+        {% for virus, bto in virus_tissue|groupby('virus') -%}
+        '{{ virus }}': {{ bto|rejectattr('bto_name', 'none')|sort(attribute='bto_name')|list|tojson }},
+        {% endfor %}
+        'N/A': [{% for e in virus_tissue|rejectattr('bto_name', 'none')|sort(attribute='bto_name') -%}
+            {% if loop.changed(e.bto_name) -%} 
+                {'bto_name': "{{e.bto_name}}", 'bto_id': "{{e.bto_id}}"},
+            {%- endif %}{% endfor %}]
+    };
+    const virusesByCellType = {
+        {% for bto_id, virus in virus_tissue|rejectattr('bto_id', 'none')|groupby('bto_id') -%}
+        '{{ bto_id }}': {{ virus|map(attribute='virus')|sort|list|tojson }},
+        {% endfor %}
+        'N/A': {{ virus_tissue|map(attribute='virus')|sort|unique|list|tojson }}
+    };
+</script>
+<script>
     window.addEventListener('DOMContentLoaded', () => {
+        setVirusFields('N/A');
+        setCellTypeFields('N/A');
         document.getElementById('filterform').addEventListener('submit', event => {
             const formData = new FormData();
             formData.append('raw_genes', document.getElementById('raw_genes').value);
             formData.append('remove_unknown', document.getElementById('bad_genes').checked);
             formData.append('sort_genes', document.getElementById('sort_genes').checked);
+            formData.append('virus', document.getElementById('virus_select').value);
+            formData.append('bto_id', document.getElementById('bto_select').value);
             const postParams = {
                 'method': 'POST',
                 'body': formData
@@ -87,12 +108,45 @@
             gene_box.value = "Differentiated cells can be reprogrammed to an embryonic-like state by transfer of nuclear contents into oocytes or by fusion with embryonic stem (ES) cells. Little is known about factors that induce this reprogramming. Here, we demonstrate induction of pluripotent stem cells from mouse embryonic or adult fibroblasts by introducing four factors, Oct3/4, Sox2, c-Myc, and Klf4, under ES cell culture conditions. Unexpectedly, Nanog was dispensable. These cells, which we designated iPS (induced pluripotent stem) cells, exhibit the morphology and growth properties of ES cells and express ES cell marker genes. Subcutaneous transplantation of iPS cells into nude mice resulted in tumors containing a variety of tissues from all three germ layers. Following injection into blastocysts, iPS cells contributed to mouse embryonic development. These data demonstrate that pluripotent stem cells can be directly generated from fibroblast cultures by the addition of only a few defined factors.";
             document.getElementById('bad_genes').checked = true;
         });
+        document.getElementById("virus_select").addEventListener('change', () => {
+            setCellTypeFields(document.getElementById('virus_select').selectedOptions[0].value);
+        });
+        document.getElementById("bto_select").addEventListener('change', () => {
+            setVirusFields(document.getElementById('bto_select').selectedOptions[0].value);
+        });
     });
     window.addEventListener('load', () => {
-        for (const id of ['raw_genes', 'badlabel', 'bad_genes', 'sortlabel', 'sort_genes', 'randomlabel', 'add_random', 'clear_genes'])
+        for (const id of ['raw_genes', 'badlabel', 'bad_genes', 'sortlabel', 
+                'sort_genes', 'randomlabel', 'add_random', 'clear_genes',
+                'virus_select', 'viruslabel', 'bto_select', 'celllabel'])
             initHelp(document.getElementById(id));
         showHelp();
     });
+    function createOption(name, value, default_select=false) {
+        const opt = document.createElement("option");
+        opt.value = (value == null) ? name : value;
+        opt.innerText = name;
+        if (default_select) opt.selected = true;
+        return opt;
+    }
+    function setVirusFields(selectedCellType) {
+        const sel = document.getElementById('virus_select');
+        const selectedVirus = sel.selectedIndex >= 0 ? sel.selectedOptions[0].value : 'N/A';
+        while (sel.hasChildNodes()) sel.removeChild(sel.firstChild);
+        sel.appendChild(createOption("All Viruses", "N/A", selectedVirus == 'N/A'));
+        for (const vir of virusesByCellType[selectedCellType]) {
+            sel.appendChild(createOption(vir, vir, default_select=(selectedVirus == vir)));
+        }
+    }
+    function setCellTypeFields(selectedVirus) {
+        const sel = document.getElementById('bto_select');
+        const selectedCellType = sel.selectedIndex >= 0 ? sel.selectedOptions[0].value : 'N/A';
+        while (sel.hasChildNodes()) sel.removeChild(sel.firstChild);
+        sel.appendChild(createOption("All Cell Types/Tissues", "N/A", selectedCellType == 'N/A'));
+        for (const ct of cellTypesByVirus[selectedVirus]) {
+            sel.appendChild(createOption(ct.bto_name, ct.bto_id, selectedCellType == ct.bto_id));
+        }
+    }
     function initHelp(el) {
         el.addEventListener('mouseover', () => showHelp(el));
         el.addEventListener('mouseout', () => showHelp());
@@ -145,6 +199,18 @@
                     "Remove every entry from the gene list.",
                     "Clear Gene List");
                 break;
+            case 'virus_select':
+            case 'viruslabel':
+                populateHelpBox(helpBox,
+                    "Only consider experiments using this virus. Applies to both the heatmap and background data used for statistics.",
+                    "Restrict by Virus");
+                break;
+            case 'bto_select':
+            case 'celllabel':
+                populateHelpBox(helpBox,
+                    "Only consider experiments using this tissue or cell type. Applies to both the heatmap and background data used for statistics.",
+                    "Restrict by Tissue/Cell type");
+                break;
             default:
                 populateHelpBox(helpBox, "Mouse over or select an input field for help.");
         }
@@ -168,6 +234,13 @@ regulation of these genes will be generated.</p>
             <button id="add_random" type="button">Add</button> <label for="add_random" id="randomlabel"><input type="number" id="num_random" value="10" min="1" max="100" style="width: 3em" /> random</label><br>
             <button id="clear_genes" type="button">Clear All</button>
         </fieldset><br>
+        <fieldset style="width: 23.5em">
+            <legend>Experiments</legend>
+            <label for="virus_select" id="viruslabel">Virus:</label> 
+            <select id="virus_select"></select><br>
+            <label for="bto_select" id="celllabel">Tissue/Cell Type:</label>
+            <select id="bto_select"></select>
+        </fieldset>
         <button>Calculate Enrichment</button>
     </form></div>
     <div id="filterhelp">

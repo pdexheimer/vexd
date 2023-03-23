@@ -26,21 +26,24 @@ def vexd_home():
 # Genes
 @bp.route('/gene_lookup')
 def gene_search():
-    return render_template('gene_search.html')
+    return render_template(
+        'gene_search.html',
+        study_count=geo().num_studies(),
+        virus_count=geo().num_viruses()
+    )
 
 # Enrichment
 @bp.route('/enrich')
 def multiple_genes():
-    return render_template('multiple_genes.html')
+    return render_template(
+        'multiple_genes.html',
+        virus_tissue=geo().virus_tissue_combos()
+    )
 
 # Studies
 @bp.route('/study')
 def study_search():
-    return render_template(
-        'study_search.html',
-        study_count=geo().num_studies(),
-        virus_count=geo().num_viruses()
-    )
+    return render_template('study_search.html')
 
 # API
 @bp.route('/api')
@@ -116,8 +119,10 @@ def gene_info_text(q):
     'raw_genes': fields.Str(), 
     'remove_unknown': fields.Boolean(missing=False),
     'sort_genes': fields.Boolean(missing=False),
+    'virus': fields.Str(),
+    'bto_id': fields.Str()
 }, location='form')
-def gene_heatmap(raw_genes, remove_unknown, sort_genes):
+def gene_heatmap(raw_genes, remove_unknown, sort_genes, virus, bto_id):
     gene_list = []
     escaped = raw_genes.translate(str.maketrans({
         "-": r"\-", "*": r"\*", "+": r"\+", "^": r"\^", "$": r"\$",
@@ -133,7 +138,7 @@ def gene_heatmap(raw_genes, remove_unknown, sort_genes):
         gene_info = geo().find_gene(gene_id)
         if not (remove_unknown and gene_info is None):
             gene_list.extend(gene_info if gene_info is not None else [{'ensembl_id': 'Unknown', 'symbol': gene_id}])
-    gene_results = pd.DataFrame(geo().get_multiple_gene_results([g['ensembl_id'] for g in gene_list if g['ensembl_id'] != 'Unknown']))
+    gene_results = pd.DataFrame(geo().get_multiple_gene_results([g['ensembl_id'] for g in gene_list if g['ensembl_id'] != 'Unknown'], virus, bto_id))
     if gene_results.empty:
         return make_response({
             'num_genes': 0,
@@ -143,7 +148,7 @@ def gene_heatmap(raw_genes, remove_unknown, sort_genes):
             'pval': 'NA',
             'heatmap': base64.b64encode(b'').decode(),
         })
-    enrich = enrichment(gene_results['logfc'])
+    enrich = enrichment(gene_results['logfc'], virus, bto_id)
     return make_response({ 
         'num_genes': gene_results['ensembl_id'].nunique(),
         'num_measurements': enrich['n1'],

@@ -16,6 +16,7 @@ class GeoSearch:
         self.genes = self.client.vexd.genes
         self.results = self.client.vexd.results
         self.bto = self.client.vexd.bto
+        self.virus_tissue = self.client.vexd.virus_tissue
         self.no_id = {'_id': False}
 
     def get_gse_info(self, gse_id):
@@ -161,14 +162,16 @@ class GeoSearch:
         ])
         return list(result)
         
-    def get_multiple_gene_results(self, ensembl_list):
+    def get_multiple_gene_results(self, ensembl_list, virus=None, bto_id=None):
         """
         Assumes that ensembl_list contains valid (ie, uppercase) IDs
         """
-        return list(self.results.find(
-            {'ensembl_id': {'$in': ensembl_list}},
-            projection=self.no_id)
-        )
+        search_criteria = {'ensembl_id': {'$in': ensembl_list}}
+        if virus and virus != 'N/A':
+            search_criteria['virus'] = virus
+        if bto_id and bto_id != 'N/A':
+            search_criteria['bto_id'] = bto_id
+        return list(self.results.find(search_criteria, projection=self.no_id))
     
     def get_all_results(self):
         return list(self.results.aggregate([
@@ -447,3 +450,6 @@ class GeoSearch:
             { '$group': {'_id': '$samples.normalized_virus'} },
             { '$count': 'num_viruses' }
         ]))[0]['num_viruses']
+    
+    def virus_tissue_combos(self):
+        return list(self.virus_tissue.find({}, projection=self.no_id))
