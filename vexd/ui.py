@@ -78,18 +78,33 @@ def help():
 
 # Results page
 @bp.route('/gene')
-@use_kwargs({'q': fields.Str()}, location='query')
-def display_gene_info(q):
-    return render_template('gene.html', gene=geo().get_gene_info(q), gene_results=geo().get_results_by_gene(q))
+@use_kwargs({
+    'q': fields.Str(),
+    'tissue': fields.Str(missing=""),
+    'descendants': fields.Bool(missing=True)
+}, location='query')
+def display_gene_info(q, tissue, descendants):
+    return render_template(
+        'gene.html', 
+        gene=geo().get_gene_info(q), 
+        gene_results=geo().get_results_by_gene(q, tissue, descendants),
+        tissue=tissue,
+        use_descendants=descendants,
+        tissue_name=geo().get_name_of_bto_term(tissue)
+    )
 
 # Boxplot figure
 @bp.route('/gene_plot')
-@use_kwargs({'q': fields.Str()}, location='query')
-def gene_boxplot(q):
+@use_kwargs({
+    'q': fields.Str(),
+    'tissue': fields.Str(missing=""),
+    'descendants': fields.Bool(missing=True)
+}, location='query')
+def gene_boxplot(q, tissue, descendants):
     response = make_response(
         plot.gene_boxplot(
             geo().get_gene_info(q),
-            geo().get_results_by_gene(q)
+            geo().get_results_by_gene(q, tissue, descendants)
         )
     )
     response.content_type = 'image/png'
@@ -97,13 +112,17 @@ def gene_boxplot(q):
 
 # Gene Results as text (for download)
 @bp.route('/gene/txt')
-@use_kwargs({'q': fields.Str()}, location='query')
-def gene_info_text(q):
+@use_kwargs({
+    'q': fields.Str(),
+    'tissue': fields.Str(missing=""),
+    'descendants': fields.Bool(missing=True)
+}, location='query')
+def gene_info_text(q, tissue, descendants):
     gene_info = geo().get_gene_info(q)
     response = make_response(render_template(
         'gene_results.txt', 
         gene=gene_info, 
-        gene_results=geo().get_results_by_gene(q)
+        gene_results=geo().get_results_by_gene(q, tissue, descendants)
     ))
     response.headers.set('Content-disposition', 'attachment', filename=f"{gene_info['symbol']}_results.txt")
     response.content_type = 'text/plain'

@@ -82,7 +82,7 @@ def gene_boxplot(gene, gene_results):
     ax.axvline(x=0, color='k', linestyle='-', linewidth=2, zorder=0)
     class_bounds = _get_class_boundaries(results)
     for bnd in class_bounds:
-        ax.axhline(y=bnd+1, color='0.8', linestyle='-')
+        ax.axhline(y=bnd, color='0.8', linestyle='-')
     ax.xaxis.grid(True)
     ax.grid(axis='y', linestyle=':', color='0.8')
     # Title and colorbar
@@ -241,7 +241,7 @@ def _get_class_boundaries(data):
     balt_col = viruses.columns.get_loc('baltimore')
     for i in range(1, viruses.shape[0]):
         if viruses.iat[i, balt_col] != viruses.iat[i-1, balt_col]:
-            results.append(i-0.5)
+            results.append(i+0.5)
     return results
 
 def add_colorbar(figure, boundaries, names):
@@ -249,7 +249,7 @@ def add_colorbar(figure, boundaries, names):
     Creates a colorbar that corresponds to the Baltimore categories in the input,
     adds it to the figure.
     """
-    augmented_bounds = [-0.5,] + boundaries + [boundaries[-1]+1,]
+    augmented_bounds = [figure.get_axes()[0].get_ylim()[1],] + boundaries + [figure.get_axes()[0].get_ylim()[0],]
     cbar = figure.colorbar(
         ScalarMappable(
             BoundaryNorm(augmented_bounds, len(augmented_bounds)-1), 
