@@ -128,12 +128,17 @@ def gene_heatmap(gene_list, results, sort_genes=False):
     for gene in gene_list:
         if gene['ensembl_id'] in bygene.groups:
             values = bygene.get_group(gene['ensembl_id'])['logfc'].to_numpy()
-            # Add miniscule amounts of noise to prevent having a singular matrix
-            # in the KDE when the values are all 0
-            values += uniform.rvs(scale=1E-5, size=len(values))
-            density = gaussian_kde(values)
-            density.set_bandwidth(density.factor / 4.)
-            this_gene = density(xs)
+            if len(values) == 1:
+                this_gene = np.zeros_like(xs)
+                gene_idx = np.searchsorted(xs, values[0])
+                this_gene[gene_idx] = 1
+            else:
+                # Add miniscule amounts of noise to prevent having a singular matrix
+                # in the KDE when the values are all 0
+                values += uniform.rvs(scale=1E-5, size=len(values))
+                density = gaussian_kde(values)
+                density.set_bandwidth(density.factor / 4.)
+                this_gene = density(xs)
         else:
             this_gene = np.zeros_like(xs)
         if data is None:
