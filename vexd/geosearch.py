@@ -141,9 +141,16 @@ class GeoSearch:
         ])
         return list(result)
 
-    def get_results_by_gene(self, ensembl_id):
+    def get_results_by_gene(self, ensembl_id, tissue, use_descendants):
+        initial_filter = { 'ensembl_id': ensembl_id.upper() }
+        if tissue:
+            if use_descendants:
+                target_ids = self.get_descendants_of_bto_term(tissue)
+                initial_filter['bto_id'] = { '$in': target_ids }
+            else:
+                initial_filter['bto_id'] = tissue
         result = self.results.aggregate([
-            { '$match': { 'ensembl_id': ensembl_id.upper() } },
+            { '$match': initial_filter },
             { '$lookup': { 
                 'from': 'viruses', 
                 'localField': 'virus', 
@@ -393,6 +400,10 @@ class GeoSearch:
             }}
         ])
         return result.next()['results']
+    
+    def get_name_of_bto_term(self, bto_id):
+        result = self.bto.find_one({'id': bto_id})
+        return None if result is None else result['label']
 
     def get_analysis_results(self, study, virus, cell_type, platform, geneSet, num_genes=None):
         initial_match = {
