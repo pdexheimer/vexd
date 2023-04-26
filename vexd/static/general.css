@@ -163,3 +163,50 @@ abbr[title] {
     text-decoration-line: underline;
     text-decoration-style: dotted;
 }
+
+.tooltip {
+    position: relative;
+}
+
+.warning {
+    background-color: yellow;
+    cursor: default;
+}
+
+.tooltip .tooltiptext {
+    visibility: hidden;
+    width: 20em;
+    background-color: black;
+    color: white;
+    font-size: small;
+    text-align: center;
+    padding: 5px 0;
+    border-radius: 6px;
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    margin-left: -10em;
+    z-index: 1;
+}
+
+.tooltip:hover .tooltiptext { visibility: visible; }
+.tooltip .tooltiptext::after {
+    content: " ";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: black transparent transparent transparent;
+}
+
+abbr { cursor: help; }
+
+.tooltiptext table {
+    margin: 0.7em auto;
+}
+
+.tooltiptext table tr {
+    background-color: black;
+}

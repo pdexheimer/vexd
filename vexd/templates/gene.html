@@ -15,8 +15,33 @@ window.addEventListener('DOMContentLoaded', () => {
         img.src = URL.createObjectURL(imageblob);
         img.addEventListener('load', () => URL.revokeObjectURL(this.src));
     });
+    const table = document.querySelectorAll('table[data-sortable]')[0];
+    const th = table.querySelectorAll('th')[6];
+    th.dispatchEvent(new Event('click'));
 });
+Sortable.setupTypes([
+    {
+        name: 'scientific',
+        defaultSortDirection: 'ascending',
+        reverse: true,
+        match: a => !isNaN(parseFloat(a)),
+        comparator: a => parseFloat(a) || 0
+    },
+    {
+        name: 'alpha',
+        defaultSortDirection: 'ascending',
+        match: () => true,
+        compare: (a, b) => a.localeCompare(b)
+    }
+]);
+Sortable.init();
 </script>
+<style>
+.tooltip .tooltiptext {
+    width: 10em;
+    margin-left: -5em;
+}
+</style>
 {% endblock %}
 {% block body %}
 {{ gene_search_body(true, false, true, use_descendants) }}<br>
@@ -41,17 +66,23 @@ window.addEventListener('DOMContentLoaded', () => {
 <table class="gse_list" data-sortable>
     <thead>
         <tr>
+            <th></th>
             <th>Study</th>
             <th>Virus</th>
             <th>Cell Type</th>
             <th># Infect/Ctrl</th>
             <th>Fold Change</th>
-            <th data-sortable-type="numeric">Adjusted p-value</th>
+            <th data-sortable-type="scientific">Adj p-value</th>
         </tr>
     </thead>
     <tbody>
         {% for result in gene_results %}
         <tr>
+            <td data-value="{{ result.setting }}">
+                <span class="tooltip"><img src="{{ url_for('static', filename=result.setting|replace(' ', '')~'.png') }}" style="height: 1.2em" />
+                    <span class="tooltiptext">Cells infected <i>{{ result.setting }}</i></span>
+                </span>
+            </td>
             <td data-value="{{ result.study|trim('GSE') }}"><a href="{{ url_for('ui.display_geo_entry', gse_id=result.study) }}">{{ result.study }}</a></td>
             <td><i>{{ result.virus }}</i></td>
             <td>{{ cell_type(result) }}</td>
