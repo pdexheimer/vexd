@@ -102,7 +102,7 @@
     <li>What defined this analysis type?  From top to bottom, this cell lists the study ID, virus, cell type, and platform.</li>
     <li>The title of the study in GEO</li>
     <li>The number of samples analyzed.  This is the number used in this analysis (ie, matching the conditions in the first cell), not in the entire study.  If a number is struck through, one or more samples were unable to be used even though they met the criteria - hover over the yellow exclamation point to find the reason.</li>
-    <li>The number of significant genes found, followed by the number that were up- and down-regulated by the virus.  Click any of these numbers to download a tab-separated file of results.  If the number of significant genes is 0, a test was performed but no genes reached significance.  If the number is &quot;--&quot;, no test was performed because the number of available samples (either infected or control) is less than two.</li>
+    <li>The number of significant genes found, followed by the number that were up- and down-regulated by the virus. Genes are significant if they change at least two-fold in the infected samples relative to the uninfected controls, and the Benjamini-Hochberg adjusted p-value is less than 0.05. Click any of these numbers to download a tab-separated file of results.  If the number of significant genes is 0, a test was performed but no genes reached significance.  If the number is &quot;--&quot;, no test was performed because the number of available samples (either infected or control) is less than two.</li>
     <li>A link to download the complete differential expression analysis for this row as a tab-separated text file.</li>
 </ul>
 <hr>

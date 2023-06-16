@@ -96,6 +96,7 @@
 <h1>No Results</h1>
 {%- else -%}
 <h1>{{ search_results|length }} {{ "Result"|pluralize(search_results|length) }}</h1>
+<a href="{{ url_for('ui.help', _anchor='studyresults') }}">Help understanding these results</a><br>
 <a href="{{ url_for('ui.virus_results_as_text', q=virus, tissue=tissue, descendants=search_kids) }}">Download table as text</a><br><br>
 <table class="gse_list">
     <thead>
