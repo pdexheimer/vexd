@@ -5,11 +5,23 @@
 <style>
     .screenshot {
         border-style: inset;
-        margin: 1em;
+        padding: 1em;
+        background-color: lightgray;
+        margin: 0 1em 1em 1em;
     }
     .right {
         float: right;
         clear: both;
+    }
+    .left {
+        float: left;
+        clear: both;
+    }
+    .example {
+        width: 45%;
+    }
+    .narrowexample {
+        width: 25%;
     }
     #browse_tree {
         height: 14em;
@@ -18,41 +30,71 @@
     #gene_result {
         width: 85%;
     }
+    hr {
+        clear: both;
+    }
+    ul {
+        overflow: auto;
+    }
 </style>
 {% endblock %}
 {% block body %}
-<hr>
-<h1>Searching for genes</h1>
-<h2>Gene Symbol/ID</h2>
-<p>Enter a gene symbol or Ensembl human gene ID (beginning with ENSG) into this box.  As you type, a suggestion list will pop up, which you can select from with the mouse or using the arrow keys and Enter.</p>
-<h2>Understanding gene search results</h2>
-<p>Following some basic information about the gene (name, aliases, etc), and a link to download the results as a tab-delimited text file, the results page shows the differential regulation of the gene in every experiment in which it is found.  Note that microarrays, particularly older varieties, do not include all genes. Results are ordered by increasing p-value.</p>
-<img class="screenshot" id="gene_result" src="{{ url_for('static', filename='gene_result.png') }}" />
-<p>Each line shows the gene's expression change in a single comparison (as before, comparisons are defined by a common study, virus, cell type, and platform).  The columns in the results are:</p>
+<h1>Using VExD</h1>
+<p>VExD contains gene expression experiments of human cells or tissues that have been infected by viruses. Experiments are curated from the <a href="https://www.ncbi.nlm.nih.gov/geo">Gene Expression Omnibus</a>. There are several ways to browse this database:</p>
 <ul>
-    <li>GEO Study ID</li>
-    <li>Virus name</li>
-    <li>Tissue/Cell type</li>
-    <li>Number of analyzed samples broken up by infection status &ndash; first infected samples, then uninfected controls</li>
-    <li>The fold change, relative to controls, found in this comparison.  Bolded values are at least 2-fold, which is the threshold for significance in VExD.</li>
-    <li>Benjamini-Hochberg adjusted p-value.  Bolded values are less than 0.05, which is the significance threshold in VExD.</li>
+    <li><a href="#gene">Search for individual genes</a> to identify their expression response across all experiments/viruses in VExD.</li>
+    <li><a href="#enrich">Enrich gene sets</a> against the background of all expression changes in VExD.</li>
+    <li><a href="#study">Search for virus infection studies</a></li>
 </ul>
 <hr>
-<h1>Searching for studies</h1>
-<h2>Virus Name</h2>
-<p>Viruses in VExD use the species name assigned by the <a href="https://talk.ictvonline.org">ICTV</a>. However, VExD also understands common aliases and abbreviations. Begin typing in the searchbox, and a list of suggestions will display.  Once your virus of interest appears in the suggestion list, select it with the arrow keys and Enter or simply by clicking on it.</p>
-<h2>Tissue/Cell type</h2>
-<p>VExD uses the <a href="https://www.brenda-enzymes.org/ontology.php?ontology_id=3">Brenda Tissue Ontology</a> to notate the cell/tissue type used in experiments.  Similar to the virus name, start typing in the textbox and select from the suggestion list.</p>
-<img class="screenshot right" id="browse_tree" src="{{ url_for('static', filename='lymphocyte_search.png') }}" />
-<h3>I can't find my cell type!</h3>
-<p>It can be challenging to figure out the exact name to use in the BTO.  A good example is trying to search for &quot;B cell&quot; &ndash; absolutely nothing related to B cells pops up in the search box.  If you can't find the term you're looking for, search for a more general term.  In this case, I would try &quot;lymphocyte&quot; or maybe even &quot;blood&quot;.  Once you've selected the more general term, click the &quot;Show Tissue Tree&quot; link. You should see something similar to the image on the right.  From here, you can navigate in the tree until you find the term you need (in this case, &quot;B-lymphocyte&quot; is a direct child of &quot;lymphocyte&quot;).  Click the term in the tree, and it will be selected in the searchbox as well.</p>
-<h3>Wait, why does &quot;lymphocyte&quot; appear multiple times in that tree?</h3>
-<p>A common feature of ontologies is that terms can have multiple parents &ndash; a lymphocyte is both a leukocyte and a type of lymphoid cell. The tree browser shows you all the places your term exists in the hierarchy.  Don't worry, though, the terms (and all of their children) are identical.  It doesn't matter which of them you click on or expand.</p>
-<h3>What about cell lines?</h3>
-<p>BTO does include terms for some of the most common cell lines, but it is not at all comprehensive. Rather than using specific cell line terms (like &quot;A-549 cell&quot;) for some cell lines and more general terms (like &quot;non-small cell lung adenocarcinoma cell line&quot;) for others, VExD uses the more general term for all cell lines.  If you want to search VExD for a specific cell line, use the suggestion box to find it.  Then click &quot;Show Tissue Tree&quot; and select the immediate parent of your cell line.</p>
-<h2>Include more specific tissues?</h2>
-<p>If this box is checked, then VExD will look for the BTO you selected as well as all children of that term.  For example, searching for &quot;lymphocyte&quot; with this box checked will return results for T cells, B cells, lymphoblasts, etc.  In general, you should leave this box checked.  You would uncheck it if you wanted to search for a specific term and nothing else.</p>
-<h2>Understanding study search results</h2>
+<a id="gene"><h2>Search for individual genes</h2></a>
+<p>Enter a gene symbol, Ensembl human gene ID (beginning with ENSG), or RefSeq ID (beginning with NM_) into the textbox.  As you type, a suggestion list will pop up, which you can select from with the mouse or using the arrow keys and Enter.</p>
+<a id="generesult"><h2>Gene Search Results</h2></a>
+<img class="screenshot example right" src="{{ url_for('static', filename='gene_results.png') }}" alt="Screenshot showing the result of searching for ISG15" />
+<p>The gene search result page (example to the right) contains four major areas:</p>
+<ol>
+    <li><p><b>Search Bar</b> <i>(Top)</i>: Allows you to quickly search for a different gene. The &quot;Refine by Tissue/Cell Type&quot; link exposes a text box which allows you to show a subset of results, based on the assayed cell type. This control works identically to the box on the <a href="#study">Study Search</a> page.</p></li>
+    <li><p><b>Gene Information</b> <i>(Left side)</i>: Displays the name of the gene, aliases, and links to common gene databases.</p></li>
+    <li><p><b>Result Table</b> <i>(Bottom)</i>: Displays the fold change and adjusted p-value for this gene in every comparison in VExD. Click the column headers to sort. Fold changes more extreme than 2-fold and p-values less than 0.05 are displayed in bold.</p></li>
+    <li><p><b>Overview Figure</b> <i>(Right side)</i>: A graphical overview of the expression of this gene in VExD. This dynamically generated figure takes a second or two to load. Click to expand.</p>
+        <p>Within the figure, each row represents a virus (sorted and colored by Baltimore family, right colorbar), and the x-axis shows the log<sub>2</sub> fold change. Each point shows the expression of the given gene in a single experiment, summarized in the boxplot overlay. The green shape at the top of the figure shows a density plot of all results.</p></li>
+</ol>
+<hr>
+<a id="enrich"><h2>Enrich gene sets</h2></a>
+<img class="screenshot narrowexample left" src="{{ url_for('static', filename='enrich_input.png') }}" alt="Screenshot of gene enrichment input box" />
+<p>Enter the list of genes you'd like to query in VExD in the main text box. Up to 150 genes can be entered, specified as gene symbols, Ensembl IDs, or RefSeq IDs. Genes may be separated by newlines, spaces, commas, semicolons, or any combination of these.</p>
+<p>In the <b>Plot</b> box, you can:</p>
+<ul>
+    <li><i>Ignore unknown gene IDs</i> &mdash; By default (unchecked), unknown gene IDs will be represented in the final heatmap as an empty row. Checking this box will not display them at all.</li>
+    <li><i>Sort genes</i> &mdash; By default (checked), genes in the output will be sorted to show the largest changes at the top. Unchecking this box will display genes in the order of input.</li>
+</ul>
+<p>The <b>Genes</b> box helps you manage your gene list:</p>
+<ul>
+    <li>You can <i>Add</i> genes selected at random. This is useful for making background gene sets.</li>
+    <li>Pressing <i>Clear All</i> will empty the gene list.</li>
+</ul>
+<p>Finally, you can filter the <b>Experiments</b> to enrich the gene set in by both <i>Virus</i> and <i>Tissue/Cell Type</i>.</p>
+<a id="enrichresults"><h2 style="clear: both">Enrichment Results</h2></a>
+<img class="screenshot example right" src="{{ url_for('static', filename='enrich_results.png') }}" alt="Screenshot of gene enrichment results" />
+<p>A few seconds after clicking &quot;Calculate Enrichment&quot;, the page will automatically scroll so that enrichment results are in view. These results compare the expression of the genes you specified to the expression of every other gene, all in the experiments using the virus and tissue/cell type specified.</p>
+<p>The text at the top describes the statistical results of enrichment:</p>
+<ul>
+    <li>The number of input genes recognized</li>
+    <li>The number of measurements of those genes in the selected comparisons</li>
+    <li>The probability that a randomly selected measurement from the input genes is larger than a randomly selected measurement from all other genes. This is the stochastic superiority statistic (aka <a href="https://en.wikipedia.org/wiki/Effect_size#Common_language_effect_size">common language effect size</a>).</li>
+    <li>The number of measurements of non-input genes in the selected comparisons</li>
+    <li>The p-value, as estimated by the <a href="https://en.wikipedia.org/wiki/Brunner_Munzel_Test">Brunner-Munzel test</a></li>
+</ul>
+<p>In the figure at bottom, the distribution of input gene expression values are represented. Each row is an input gene, and the x-axis shows log<sub>2</sub> fold changes. Each row is colored by the density of input measurements &mdash; brighter colors indicate that more measurements show the associated fold change. This allows you to assess whether a gene is generally up- or down-regulated (bright spots right or left, respectively, of the center line), and how consistently it behaves across experiments (whether it's a sharp point or a smear). Above the heatmap is a density plot of all input measurements, which helps in finding subtle shifts.</p>
+<hr>
+<a id="study"><h2>Search for virus infection studies</h2></a>
+<p>You can search for studies by specifying either the virus or the cell type used in the experiment:</p>
+<ul>
+    <li><b>Virus Name</b>: Viruses in VExD use the species name assigned by the <a href="https://talk.ictvonline.org">ICTV</a>. However, VExD also understands common aliases and abbreviations. Begin typing in the searchbox, and a list of suggestions will display.  Once your virus of interest appears in the suggestion list, select it with the arrow keys and Enter or simply by clicking on it.</li>
+    <li><b>Tissue/Cell Type</b>: VExD uses the <a href="https://www.brenda-enzymes.org/ontology.php?ontology_id=3">Brenda Tissue Ontology</a> to notate the cell/tissue type used in experiments.  Similar to the virus name, start typing in the textbox and select from the suggestion list.</li>
+    <li><b>Include more specific tissues</b>: If this box is checked, then VExD will look for the BTO you selected as well as all children of that term.  For example, searching for &quot;lymphocyte&quot; with this box checked will return results for T cells, B cells, lymphoblasts, etc.  In general, you should leave this box checked.  You would uncheck it if you wanted to search for a specific term and nothing else.</li>
+</ul>
+<a id="studyresults"><h2>Study Search Results</h2></a>
 <p>Results from a study search are listed in a table, with each row representing a single differential expression analysis.  Analyses were performed within each study, while matching the virus, cell type, and platform.  This makes it extremely common for studies to have multiple analyses, because they queried multiple cell types for instance.  Results are ordered by the number of significant genes found.  You can click the <i>Download table as text</i> link at the top to get the results page as a tab-separated text file.</p>
 <img class="screenshot" id="study_result" src="{{ url_for('static', filename='study_result.png') }}" />
 <p>Each line of the results table summarizes an analysis.  From left to right, the columns tell you:</p>
@@ -63,4 +105,14 @@
     <li>The number of significant genes found, followed by the number that were up- and down-regulated by the virus.  Click any of these numbers to download a tab-separated file of results.  If the number of significant genes is 0, a test was performed but no genes reached significance.  If the number is &quot;--&quot;, no test was performed because the number of available samples (either infected or control) is less than two.</li>
     <li>A link to download the complete differential expression analysis for this row as a tab-separated text file.</li>
 </ul>
+<hr>
+<a id="faqcell"><h2>Frequently Asked Cell Type/Tissue Questions</h2></a>
+<p>Here are some tips for specifying cell type or tissue. The &quot;Show Tissue Tree&quot; option described here is only present on the <a href="#study">Study Search</a> page, which might make that page the best place to start in finding your desired cell type/tissue.</p>
+<img class="screenshot right" id="browse_tree" src="{{ url_for('static', filename='lymphocyte_search.png') }}" />
+<h3>I can't find my cell type!</h3>
+<p>It can be challenging to figure out the exact name to use in the BTO.  A good example is trying to search for &quot;B cell&quot; &ndash; absolutely nothing related to B cells pops up in the search box.  If you can't find the term you're looking for, search for a more general term.  In this case, I would try &quot;lymphocyte&quot; or maybe even &quot;blood&quot;.  Once you've selected the more general term, click the &quot;Show Tissue Tree&quot; link. You should see something similar to the image on the right.  From here, you can navigate in the tree until you find the term you need (in this case, &quot;B-lymphocyte&quot; is a direct child of &quot;lymphocyte&quot;).  Click the term in the tree, and it will be selected in the searchbox as well.</p>
+<h3>Wait, why does &quot;lymphocyte&quot; appear multiple times in that tree?</h3>
+<p>A common feature of ontologies is that terms can have multiple parents &ndash; a lymphocyte is both a leukocyte and a type of lymphoid cell. The tree browser shows you all the places your term exists in the hierarchy.  Don't worry, though, the terms (and all of their children) are identical.  It doesn't matter which of them you click on or expand.</p>
+<h3>What about cell lines?</h3>
+<p>BTO does include terms for some of the most common cell lines, but it is not at all comprehensive. Rather than using specific cell line terms (like &quot;A-549 cell&quot;) for some cell lines and more general terms (like &quot;non-small cell lung adenocarcinoma cell line&quot;) for others, VExD uses the more general term for all cell lines.  If you want to search VExD for a specific cell line, use the suggestion box to find it.  Then click &quot;Show Tissue Tree&quot; and select the immediate parent of your cell line.</p>
 {% endblock %}

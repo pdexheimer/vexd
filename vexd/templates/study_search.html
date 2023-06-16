@@ -15,5 +15,5 @@
         <li><a href="{{ url_for('ui.virus_results', q='', tissue='BTO:0001025', descendants=false) }}">PBMCs infected with any virus</a></li>
         <li><a href="{{ url_for('ui.virus_results', q='Human immunodeficiency virus 1', tissue='BTO:0000089', descendants=true) }}">Any blood cell infected with HIV</a></li>
     </ul>
-    <p>More detailed instructions can be found on the <a href="{{ url_for('ui.help') }}">Help</a> page.</p>
+    <p>More detailed instructions can be found on the <a href="{{ url_for('ui.help', _anchor='study') }}">Help</a> page.</p>
 {% endblock %}

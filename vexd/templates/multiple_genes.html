@@ -71,7 +71,9 @@
                     const imgBlob = await b64ToBlob(result['heatmap']);
                     img.src = URL.createObjectURL(imgBlob);
                     img.addEventListener('load', () => URL.revokeObjectURL(this.src));
-                    document.getElementById("results").style.display = "block";
+                    const resultBlock = document.getElementById("results");
+                    resultBlock.style.display = "block";
+                    img.addEventListener('load', () => resultBlock.scrollIntoView());
                 })
                 .finally(() => {document.body.classList.remove('wait');});
             event.preventDefault();
@@ -245,6 +247,7 @@ regulation of these genes will be generated.</p>
     </form></div>
     <div id="filterhelp">
         <div id="helpbox"></div>
+        <a href="{{ url_for('ui.help', _anchor='enrich') }}">Detailed documentation</a>
     </div>
 </div>
 <br>
