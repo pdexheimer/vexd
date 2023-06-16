@@ -7,18 +7,6 @@
 <script src="{{ url_for('static', filename='sortable.min.js') }}"></script>
 <link rel="stylesheet" href="{{ url_for('static', filename='sortable-theme-minimal.css') }}" />
 <script>
-window.addEventListener('DOMContentLoaded', () => {
-    fetch("{{ url_for('ui.gene_boxplot', q=gene.ensembl_id, tissue=tissue, descendants=use_descendants)|safe }}")
-    .then(response => response.blob())
-    .then(imageblob => {
-        img = document.getElementById("boxplot");
-        img.src = URL.createObjectURL(imageblob);
-        img.addEventListener('load', () => URL.revokeObjectURL(this.src));
-    });
-    const table = document.querySelectorAll('table[data-sortable]')[0];
-    const th = table.querySelectorAll('th')[6];
-    th.dispatchEvent(new Event('click'));
-});
 Sortable.setupTypes([
     {
         name: 'scientific',
@@ -34,7 +22,20 @@ Sortable.setupTypes([
         compare: (a, b) => a.localeCompare(b)
     }
 ]);
-Sortable.init();
+window.addEventListener('DOMContentLoaded', () => {
+    fetch("{{ url_for('ui.gene_boxplot', q=gene.ensembl_id, tissue=tissue, descendants=use_descendants)|safe }}")
+    .then(response => response.blob())
+    .then(imageblob => {
+        img = document.getElementById("boxplot");
+        img.src = URL.createObjectURL(imageblob);
+        img.addEventListener('load', () => URL.revokeObjectURL(this.src));
+    });
+
+    Sortable.init();
+    const table = document.querySelectorAll('table[data-sortable]')[0];
+    const th = table.querySelectorAll('th')[6];
+    th.dispatchEvent(new Event('click'));
+});
 </script>
 <style>
 .tooltip .tooltiptext {
@@ -47,6 +48,7 @@ Sortable.init();
 {{ gene_search_body(true, false, true, use_descendants) }}<br>
 <div style="display: grid; grid-template-columns: 48% 48%; gap: 4%">
 <div>
+<p><a href="{{ url_for('ui.help', _anchor='generesult') }}">Help understanding these results</a></p>
 <h1>{{ gene.symbol }}</h1>
 <h2>{{ gene.description|default("No Description") }}</h2>
 <p><b>Ensembl ID:</b> <a href="https://ensembl.org/Homo_sapiens/Gene/Summary?db=core;g={{ gene.ensembl_id }}" target="_blank">{{ gene.ensembl_id }}</a></p>
