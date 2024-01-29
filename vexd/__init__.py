@@ -1,5 +1,6 @@
 import os
 import json
+from datetime import date
 
 import click
 from flask import Flask, request
@@ -86,5 +87,9 @@ def create_app(test_config=None):
     @app.template_test('virus_class_is')
     def sample_category_equals(sample, value):
         return get_sample_category(sample) == value
+    
+    @app.context_processor
+    def thisyear():
+        return dict(thisyear=date.today().year)
 
     return app

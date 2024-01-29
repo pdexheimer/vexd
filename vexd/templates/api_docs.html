@@ -767,10 +767,10 @@
 }</samp></pre>
 </div>
 <h2>BTO Lookup</h2>
-<p>VExD does not maintain a complete copy of the Brenda Tissue Ontology.  We recommend using the <a href="https://www.ebi.ac.uk/ols/docs/api">EMBL Ontology Lookup Service API</a>.  The example call below searches for BTO terms matching <code>blood</code>.  The ranked results are in the <code>response.docs</code> array, and the <code>obo_id</code> element for the corresponding term can be used to search in VExD.</p>
+<p>VExD does not maintain a complete copy of the Brenda Tissue Ontology.  We recommend using the <a href="https://www.ebi.ac.uk/ols4/help">EMBL Ontology Lookup Service API</a>.  The example call below searches for BTO terms matching <code>blood</code>.  The ranked results are in the <code>response.docs</code> array, and the <code>obo_id</code> element for the corresponding term can be used to search in VExD.</p>
 <h3>Example Call</h3>
 <div class="rest">
-<code>curl https://www.ebi.ac.uk/ols/api/select?ontology=bto&q=blood</code>
+<code>curl https://www.ebi.ac.uk/ols4/api/select?ontology=bto&q=blood</code>
 </div>
 <h3>Example Result</h3>
 <div class="rest">

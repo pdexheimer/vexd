@@ -9,7 +9,7 @@
 
 {%- macro cell_type(obj) -%}
 {% if obj.bto_id -%}
-{{obj.bto_name}}&nbsp;<a href="https://www.ebi.ac.uk/ols/ontologies/bto/terms?iri={{ ["http://purl.obolibrary.org/obo/", obj.bto_id|replace(":", "_")]|join|urlencode|replace("/", "%2F") }}"
+{{obj.bto_name}}&nbsp;<a href="https://www.ebi.ac.uk/ols4/ontologies/bto/terms?iri={{ ["http://purl.obolibrary.org/obo/", obj.bto_id|replace(":", "_")]|join|urlencode|replace("/", "%2F") }}"
 target="_blank"><img src="{{ url_for('static', filename='ols.png') }}" class="geo_icon" /></a>
 {%- else -%}
 <i>{{obj.cell_type}}</i>
@@ -124,7 +124,7 @@ target="_blank"><img src="{{ url_for('static', filename='ols.png') }}" class="ge
         };
         ac_instance.start({
             action: function(relativePath, suggestion_ontology, type, iri, data, value) {
-                tv_instance.draw($("#term-tree"), false, "bto", "terms", iri, "https://www.ebi.ac.uk/ols/", tv_options);
+                tv_instance.draw($("#term-tree"), false, "bto", "terms", iri, "https://www.ebi.ac.uk/ols4", tv_options);
                 $("#tissue").val(parse_iri(iri));
                 $("#tissue").data("bto_name", value);
                 $("input[type='submit']").prop("disabled", false);
@@ -133,17 +133,17 @@ target="_blank"><img src="{{ url_for('static', filename='ols.png') }}" class="ge
 
         {% if term != '' -%}
         var iri = "http://purl.obolibrary.org/obo/{{ term|replace(':', '_') }}";
-        fetch('https://www.ebi.ac.uk/ols/api/ontologies/bto/terms/'+encodeURIComponent(encodeURIComponent(iri)))
+        fetch('https://www.ebi.ac.uk/ols4/api/ontologies/bto/terms/'+encodeURIComponent(encodeURIComponent(iri)))
         .then(response => response.json())
         .then(result => {
-            tv_instance.draw($("#term-tree"), false, "bto", "terms", iri, "https://www.ebi.ac.uk/ols/", tv_options);
+            tv_instance.draw($("#term-tree"), false, "bto", "terms", iri, "https://www.ebi.ac.uk/ols4", tv_options);
             $("#tissue").val("{{ term }}");
             $("#tissue").data("bto_name", result.label);
             $("#ols-autocomplete").typeahead('val', result.label);
             $("input[type='submit']").prop("disabled", false);
         });
         {%- else -%}
-        tv_instance.draw($("#term-tree"), false, "bto", "terms", "", "https://www.ebi.ac.uk/ols/", tv_options);
+        tv_instance.draw($("#term-tree"), false, "bto", "terms", "", "https://www.ebi.ac.uk/ols4", tv_options);
         {%- endif %}
     });
     function clearContents(el) {
@@ -211,7 +211,7 @@ target="_blank"><img src="{{ url_for('static', filename='ols.png') }}" class="ge
                 size="40" name="q" placeholder="Virus name" autofocus/>
             </div><br>
             <input type="text" size="40" placeholder="Tissue/Cell type" data-olswidget="select" 
-            data-olsontology="bto" data-selectpath="https://www.ebi.ac.uk/ols/" id="ols-autocomplete"
+            data-olsontology="bto" data-selectpath="https://www.ebi.ac.uk/ols4/" id="ols-autocomplete"
             style="font-weight: normal" class="searchbox" /><br>
             <input type="checkbox" name="descendants" id="kids" value="1" {{ "checked" if search_kids }} />
             <label for="kids" id="kidlabel">Include more specific tissues?</label><br />
@@ -369,7 +369,7 @@ target="_blank"><img src="{{ url_for('static', filename='ols.png') }}" class="ge
 
         {% if tissue and tissue != '' -%}
         var iri = "http://purl.obolibrary.org/obo/{{ tissue|replace(':', '_') }}";
-        fetch('https://www.ebi.ac.uk/ols/api/ontologies/bto/terms/'+encodeURIComponent(encodeURIComponent(iri)))
+        fetch('https://www.ebi.ac.uk/ols4/api/ontologies/bto/terms/'+encodeURIComponent(encodeURIComponent(iri)))
         .then(response => response.json())
         .then(result => {
             $("#tissue").val("{{ tissue }}");
@@ -401,7 +401,7 @@ target="_blank"><img src="{{ url_for('static', filename='ols.png') }}" class="ge
                 <br>
                 <input type="hidden" name="tissue" id="tissue" />
                 <input type="text" size="36" placeholder="Tissue/Cell type" data-olswidget="select" 
-                data-olsontology="bto" data-selectpath="https://www.ebi.ac.uk/ols/" id="ols-autocomplete"
+                data-olsontology="bto" data-selectpath="https://www.ebi.ac.uk/ols4/" id="ols-autocomplete"
                 style="font-weight: normal" class="searchbox" /><br>
                 <input type="checkbox" name="descendants" id="kids" value="1" {{ "checked" if include_kids }}/>
                 <label for="kids" id="kidlabel">Include more specific tissues?</label><br />
